@@ -5,7 +5,10 @@ import reportWebVitals from './reportWebVitals';
 import  './firebase/clientApp';
 import "antd/dist/antd.css";
 import "./index.css";
+import 'moment/locale/ru';
+import moment from 'moment';
 
+moment().locale('ru');
 
 ReactDOM.render(
   <React.StrictMode>

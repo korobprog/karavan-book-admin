@@ -11,13 +11,11 @@ import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
 import { Spinner } from "../shared/components/Spinner";
-import { useOperations } from "../firebase/useOperations";
 import { useUser } from "../firebase/useUser";
 
 const Home = () => {
   const { auth, user, profile, userLoading } = useUser();
   const navigate = useNavigate();
-  const { myOperationDocData } = useOperations();
 
   useEffect(() => {
     if (!user && !userLoading) {

@@ -5,9 +5,8 @@ import {
   getFirestore,
   addDoc,
   query,
-  where,
+  orderBy,
 } from "firebase/firestore";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 
 export type DistributedBook = {
@@ -27,28 +26,22 @@ export type OperationDoc = {
 };
 
 export const useOperations = () => {
-  const auth = getAuth();
   const db = getFirestore();
-  const [user, userLoading] = useAuthState(auth);
   const operationRef = collection(
     db,
     "operations"
   ) as CollectionReference<OperationDoc>;
 
-  const [operationDocData, operationDocLoading] =
-    useCollectionData<OperationDoc>(operationRef);
-
-  // TODO: add useUserOperationsCollection - firebase can't sort by time of one user
-  const [myOperationDocData, myOperationDocLoading] =
+  const [operationsDocData, operationsDocLoading] =
     useCollectionData<OperationDoc>(
-      query(operationRef, where("userId", "==", user?.uid || ""))
+      query(operationRef, orderBy("date", "desc"))
     );
 
   const addOperation = async (params: OperationDoc) => {
     addDoc(operationRef, params);
   };
 
-  const loading = operationDocLoading || myOperationDocLoading || userLoading;
+  const loading = operationsDocLoading;
 
-  return { operationDocData, addOperation, myOperationDocData, loading };
+  return { addOperation, operationsDocData, loading };
 };

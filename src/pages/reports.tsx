@@ -3,15 +3,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import useGoogleSheets from "use-google-sheets";
-import {
-  Button,
-  Layout,
-  PageHeader,
-  Tooltip,
-  Typography,
-  Input,
-  Table,
-} from "antd";
+import { Button, Layout, PageHeader, Tooltip, Table, Tag } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
@@ -27,10 +19,7 @@ import {
 import { useLocations } from "../firebase/useLocations";
 import { LocationSelect } from "../shared/components/LocationSelect";
 import { useDebouncedCallback } from "use-debounce/lib";
-
-type FormValues = Record<number, number> & {
-  locationId: string;
-};
+import moment from "moment";
 
 export const Reports = () => {
   const auth = getAuth();
@@ -50,8 +39,11 @@ export const Reports = () => {
     sheetId: process.env.REACT_APP_GOOGLE_SHEETS_ID as string,
   });
 
-  const { addOperation } = useOperations();
-  const { addLocation, locationsDocData } = useLocations({});
+  const {
+    addOperation,
+    operationsDocData,
+    loading: operationLoading,
+  } = useOperations();
 
   useEffect(() => {
     if (!user && !loading) {
@@ -59,65 +51,78 @@ export const Reports = () => {
     }
   }, [user, loading, navigate]);
 
-  // if (booksLoading || userLoading) {
-  //   return <Spinner />;
-  // }
+  if (booksLoading || userLoading || operationLoading) {
+    return <Spinner />;
+  }
 
   const onLogout = () => {
     signOut(auth);
   };
 
-  const { Search } = Input;
   const { Content, Footer, Header } = Layout;
-  const { Title } = Typography;
 
   const columns = [
     {
-      title: "Name",
+      title: "Статус",
+      dataIndex: "isAuthorized",
+      key: "isAuthorized",
+      render: (status: boolean) =>
+        status ? (
+          <Tag color="green">Подтвержден</Tag>
+        ) : (
+          <Tag color="processing">Ожидание</Tag>
+        ),
+    },
+    {
+      title: "Дата",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) => moment(date).calendar(),
+    },
+    {
+      title: "Пользователь",
       dataIndex: "name",
       key: "name",
       render: (text: string) => <a>{text}</a>,
     },
     {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
+      title: "Всего книг",
+      dataIndex: "totalCount",
+      key: "totalCount",
     },
+    // {
+    //   title: "Книги",
+    //   dataIndex: "books",
+    //   key: "books",
+    //   render: (books: OperationDoc['books']) => (
+    //     <>
+    //       {books.map((book, index) => {
+    //         let color = index > 2 ? "geekblue" : "green";
+
+    //         return (
+    //           <Tag color={color} key={index}>
+    //             id {book.bookId} - {book.count} шт.
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
     {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
-    },
-    {
-      title: "Action",
+      title: "Действие",
       key: "action",
-      render: (text: string, record: any) => <a>Подтвердить {record.name}</a>,
+      render: (text: string, record: any) => <a>Подтвердить</a>,
     },
   ];
 
-  const data = [
-    {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
-      tags: ["nice", "developer"],
-    },
-    {
-      key: "2",
-      name: "Jim Green",
-      age: 42,
-      address: "London No. 1 Lake Park",
-      tags: ["loser"],
-    },
-    {
-      key: "3",
-      name: "Joe Black",
-      age: 32,
-      address: "Sidney No. 1 Lake Park",
-      tags: ["cool", "teacher"],
-    },
-  ];
+  const data = operationsDocData?.map((operation, index) => ({
+    key: operation.date + index,
+    date: operation.date,
+    isAuthorized: operation.isAuthorized,
+    name: operation.userName,
+    totalCount: operation.totalCount,
+    books: operation.books,
+  }));
 
   return (
     <Layout>
