@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "karavan-book-admin",
+    "karavan-book-admin": "karavan-book-admin"
+  },
+  "targets": {}
+}
