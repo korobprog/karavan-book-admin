@@ -1,8 +1,10 @@
 export const routes = {
     root: '/',
-    report: '/report',
     auth: '/auth',
     registration: '/registration',
     profile: '/profile',
+    reports: '/reports',
+    users: '/users',
+    location: '/locations',
 };
 

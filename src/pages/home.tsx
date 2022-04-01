@@ -4,8 +4,8 @@ import { Button, Divider, Layout, PageHeader, Tooltip, Typography } from "antd";
 import {
   ReadOutlined,
   LogoutOutlined,
-  UserAddOutlined,
-  MessageOutlined,
+  TeamOutlined,
+  FlagOutlined,
 } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
@@ -30,23 +30,21 @@ const Home = () => {
   }
 
   const onAddReport = () => {
-    navigate(routes.report);
+    navigate(routes.reports);
   };
 
   const onLogout = () => {
     signOut(auth);
   };
 
-  const statistic2022 = profile.statistic?.[2022];
-
   const { Content, Footer, Header } = Layout;
-  const { Title, Paragraph } = Typography;
+  const { Title } = Typography;
 
   return (
     <Layout>
       <Header className="site-page-header">
         <PageHeader
-          title="УЧЕТ КНИГ"
+          title="УЧЕТ КНИГ (АДМИН)"
           className="page-header"
           avatar={{ src: BbtLogo }}
           extra={[
@@ -67,7 +65,6 @@ const Home = () => {
           <Title className="site-page-title" level={2}>
             Привет, {profile.name || user?.displayName || "друг"}
           </Title>
-          <Paragraph>Отметить распространненные книги</Paragraph>
           <Button
             type="primary"
             block
@@ -75,43 +72,15 @@ const Home = () => {
             icon={<ReadOutlined />}
             onClick={onAddReport}
           >
-            Отметить книги
-          </Button>
-          {statistic2022 && (
-            <Paragraph>
-              В этом году вы распространили - книг:{" "}
-              {statistic2022.count}, баллов: {statistic2022.points}
-            </Paragraph>
-          )}
-          {myOperationDocData && <Paragraph>Последние операции:</Paragraph>}
-          {myOperationDocData?.map((operation, index) => {
-            return (
-              <Paragraph key={index}>
-                {new Date(operation.date).toLocaleDateString()} - книг:{" "}
-                {operation.totalCount}, баллов: {operation.totalPoints}
-              </Paragraph>
-            );
-          })}
-          <Divider dashed />
-          <Button
-            href="https://t.me/karavanBook_bot"
-            target="_blank"
-            block
-            size="large"
-            icon={<MessageOutlined />}
-          >
-            Отправить историю / поддержка
+            Последние операции
           </Button>
           <Divider dashed />
-          <Paragraph>Отправить полученные контакты</Paragraph>
-          <Button
-            href="http://san.bhakti-vriksha.ru/"
-            target="_blank"
-            block
-            size="large"
-            icon={<UserAddOutlined />}
-          >
-            Вторая волна
+          <Button block size="large" icon={<TeamOutlined />}>
+            Пользователи
+          </Button>
+          <Divider dashed />
+          <Button block size="large" icon={<FlagOutlined />}>
+            Города
           </Button>
         </div>
       </Content>
