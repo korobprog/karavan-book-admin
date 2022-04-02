@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import useGoogleSheets from "use-google-sheets";
@@ -9,49 +8,33 @@ import { LogoutOutlined } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
 import { Spinner } from "../shared/components/Spinner";
-import { Book, getBooks } from "../shared/helpers/getBooks";
 import { useUser } from "../firebase/useUser";
-import {
-  DistributedBook,
-  OperationDoc,
-  useOperations,
-} from "../firebase/useOperations";
-import { useLocations } from "../firebase/useLocations";
-import { LocationSelect } from "../shared/components/LocationSelect";
-import { useDebouncedCallback } from "use-debounce/lib";
+import { useOperations } from "../firebase/useOperations";
 import moment from "moment";
 
 export const Reports = () => {
   const auth = getAuth();
-  const {
-    profile,
-    addStatistic,
-    favorite,
-    toggleFavorite,
-    loading: userLoading,
-  } = useUser();
-  const [user, loading] = useAuthState(auth);
+  const { profile, userLoading, user, loading } = useUser();
 
   const navigate = useNavigate();
 
-  const { data: books, loading: booksLoading } = useGoogleSheets({
+  const { loading: booksLoading } = useGoogleSheets({
     apiKey: process.env.REACT_APP_GOOGLE_API_KEY as string,
     sheetId: process.env.REACT_APP_GOOGLE_SHEETS_ID as string,
   });
 
-  const {
-    addOperation,
-    operationsDocData,
-    loading: operationLoading,
-  } = useOperations();
+  const { operationsDocData, loading: operationLoading } = useOperations();
 
   useEffect(() => {
-    if (!user && !loading) {
+    if (!user && !userLoading) {
       navigate(routes.auth);
     }
-  }, [user, loading, navigate]);
+    if (profile.role !== "admin" && !loading) {
+      navigate(routes.root);
+    }
+  }, [user, profile, userLoading, loading, navigate]);
 
-  if (booksLoading || userLoading || operationLoading) {
+  if (booksLoading || loading || operationLoading) {
     return <Spinner />;
   }
 
@@ -83,7 +66,7 @@ export const Reports = () => {
       title: "Пользователь",
       dataIndex: "name",
       key: "name",
-      render: (text: string) => <a>{text}</a>,
+      render: (text: string) => text,
     },
     {
       title: "Всего книг",
@@ -111,7 +94,7 @@ export const Reports = () => {
     {
       title: "Действие",
       key: "action",
-      render: (text: string, record: any) => <a>Подтвердить</a>,
+      render: (text: string, record: any) => <Button>Подтвердить</Button>,
     },
   ];
 

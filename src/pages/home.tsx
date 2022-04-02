@@ -6,6 +6,8 @@ import {
   LogoutOutlined,
   TeamOutlined,
   FlagOutlined,
+  MessageOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +16,7 @@ import { Spinner } from "../shared/components/Spinner";
 import { useUser } from "../firebase/useUser";
 
 const Home = () => {
-  const { auth, user, profile, userLoading } = useUser();
+  const { auth, user, profile, loading, userLoading } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,10 +24,6 @@ const Home = () => {
       navigate(routes.auth);
     }
   }, [user, userLoading, navigate]);
-
-  if (!user) {
-    return <Spinner />;
-  }
 
   const onAddReport = () => {
     navigate(routes.reports);
@@ -36,7 +34,46 @@ const Home = () => {
   };
 
   const { Content, Footer, Header } = Layout;
-  const { Title } = Typography;
+  const { Title, Paragraph } = Typography;
+
+  if (loading) {
+    return <Spinner />;
+  }
+console.log('!!!', profile )
+  if (profile.role !== "admin") {
+    return (
+      <div className="site-layout-content">
+        <Title className="site-page-title" level={2}>
+          Доступ закрыт
+        </Title>
+        <Paragraph>
+          Уважаемый {profile.name || user?.displayName || "друг"}, Ваш аккаунт
+          не обладает правами администратора.
+        </Paragraph>
+        <Paragraph>
+          Вы можете связаться с поддержкой для получения доступа:
+        </Paragraph>
+        <Button
+          href="https://t.me/karavanBook_bot"
+          target="_blank"
+          block
+          size="large"
+          icon={<MessageOutlined />}
+        >
+          Открыть поддержку в телеграмм
+        </Button>
+        <Divider />
+        <Button
+          href="https://karavan-book-tracker.web.app/"
+          block
+          size="large"
+          icon={<BookOutlined />}
+        >
+          Перейти в трекер
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <Layout>
