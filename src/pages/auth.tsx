@@ -39,7 +39,6 @@ const Auth = () => {
     }
   }, [googleUser, signedUser, navigate, profile, loading]);
 
-
   const onFinish = ({ email, password }: any) => {
     signInWithEmailAndPassword(email, password);
   };

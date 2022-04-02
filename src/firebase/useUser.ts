@@ -13,12 +13,15 @@ type StatisticType = {
   points: number;
 };
 
+type UserRoles = 'admin';
+
 type UserDoc = {
   name?: string;
   phone?: string;
   address?: string;
   city?: string;
   favorite?: string[];
+  role?: UserRoles;
   statistic?: {
     "2022": StatisticType;
   };

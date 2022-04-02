@@ -2,10 +2,9 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Auth from "./pages/auth";
 import Registration from "./pages/registration";
 import Home from "./pages/home";
-import Profile from "./pages/profile";
 import React from "react";
 import { routes } from "././shared/routes";
-import Report from "./pages/report";
+import { Reports } from "./pages/reports";
 
 function App() {
   return (
@@ -13,10 +12,9 @@ function App() {
       <div>
         <Routes>
           <Route path={routes.root} element={<Home />} />
-          <Route path={routes.report} element={<Report />} />
           <Route path={routes.auth} element={<Auth />} />
           <Route path={routes.registration} element={<Registration />} />
-          <Route path={routes.profile} element={<Profile />} />
+          <Route path={routes.reports} element={<Reports />} />
         </Routes>
       </div>
     </BrowserRouter>

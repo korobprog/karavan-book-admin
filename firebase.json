@@ -4,6 +4,7 @@
   },
   "hosting": {
     "public": "build",
+    "target": "admin",
     "ignore": [
       "firebase.json",
       "**/.*",
