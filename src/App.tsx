@@ -5,6 +5,7 @@ import Home from "./pages/home";
 import React from "react";
 import { routes } from "././shared/routes";
 import { Reports } from "./pages/reports";
+import { Locations } from "./pages/locations";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path={routes.auth} element={<Auth />} />
           <Route path={routes.registration} element={<Registration />} />
           <Route path={routes.reports} element={<Reports />} />
+          <Route path={routes.locations} element={<Locations />} />
         </Routes>
       </div>
     </BrowserRouter>

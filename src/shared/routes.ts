@@ -5,6 +5,6 @@ export const routes = {
     profile: '/profile',
     reports: '/reports',
     users: '/users',
-    location: '/locations',
+    locations: '/locations',
 };
 

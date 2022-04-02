@@ -25,12 +25,27 @@ const idConverter: FirestoreDataConverter<any> = {
   },
 };
 
+export type StatisticType = {
+  count: number;
+  points: number;
+};
+
+type LocationsStatisticType = {
+  primary: StatisticType;
+  other: StatisticType;
+  online: StatisticType;
+  total: StatisticType;
+};
+
 export type LocationDoc = {
   id?: string;
   name: string;
   country?: string;
   coordinates?: number[];
   image?: string;
+  statistic?: {
+    "2022"?: LocationsStatisticType;
+  };
 };
 
 export type UseLocationsParams = {
@@ -43,19 +58,22 @@ export const useLocations = ({ searchString = "" }: UseLocationsParams) => {
     idConverter
   ) as CollectionReference<LocationDoc>;
 
-  const [locationsDocData, locationDocLoading] = useCollectionData<LocationDoc>(
-    query(
-      locationRef,
-      where("name", ">=", searchString),
-      where("name", "<=", searchString + "\uf8ff")
-    )
-  );
+  const [locationsDocData, locationsDocLoading] =
+    useCollectionData<LocationDoc>(
+      searchString
+        ? query(
+            locationRef,
+            where("name", ">=", searchString),
+            where("name", "<=", searchString + "\uf8ff")
+          )
+        : locationRef
+    );
 
   const addLocation = async (data: LocationDoc) => {
     addDoc(locationRef, data);
   };
 
-  const loading = locationDocLoading;
+  const loading = locationsDocLoading;
 
   return { locationsDocData, addLocation, loading };
 };

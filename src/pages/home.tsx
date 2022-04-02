@@ -28,6 +28,9 @@ const Home = () => {
   const onAddReport = () => {
     navigate(routes.reports);
   };
+  const onLocationsSelect = () => {
+    navigate(routes.locations);
+  };
 
   const onLogout = () => {
     signOut(auth);
@@ -39,7 +42,7 @@ const Home = () => {
   if (loading) {
     return <Spinner />;
   }
-console.log('!!!', profile )
+
   if (profile.role !== "admin") {
     return (
       <div className="site-layout-content">
@@ -114,8 +117,8 @@ console.log('!!!', profile )
             Пользователи
           </Button>
           <Divider dashed />
-          <Button block size="large" icon={<FlagOutlined />}>
-            Города
+          <Button block size="large" icon={<FlagOutlined />} onClick={onLocationsSelect}>
+            Города на карте
           </Button>
         </div>
       </Content>
