@@ -31,7 +31,7 @@ const Profile = () => {
   const { Option } = Select;
 
   const [locationSearchString, setLocationSearchString] = useState("");
-  const { addLocation, locationsDocData } = useLocations({
+  const { addLocation, locations } = useLocations({
     searchString: locationSearchString,
   });
 
@@ -85,7 +85,7 @@ const Profile = () => {
     </Form.Item>
   );
 
-  const locationOptions = locationsDocData?.map((d) => (
+  const locationOptions = locations?.map((d) => (
     <Select.Option key={d.id}>{d.name}</Select.Option>
   ));
 

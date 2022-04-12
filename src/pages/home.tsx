@@ -31,6 +31,9 @@ const Home = () => {
   const onLocationsSelect = () => {
     navigate(routes.locations);
   };
+  const onUsersSelect = () => {
+    navigate(routes.users);
+  };
 
   const onLogout = () => {
     signOut(auth);
@@ -113,7 +116,7 @@ const Home = () => {
             Последние операции
           </Button>
           <Divider dashed />
-          <Button block size="large" icon={<TeamOutlined />}>
+          <Button block size="large" icon={<TeamOutlined />} onClick={onUsersSelect}>
             Пользователи
           </Button>
           <Divider dashed />
