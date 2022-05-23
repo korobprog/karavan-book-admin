@@ -6,6 +6,7 @@ import React from "react";
 import { routes } from "././shared/routes";
 import { Reports } from "./pages/reports";
 import { Locations } from "./pages/locations";
+import { Users } from "./pages/users";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path={routes.registration} element={<Registration />} />
           <Route path={routes.reports} element={<Reports />} />
           <Route path={routes.locations} element={<Locations />} />
+          <Route path={routes.users} element={<Users />} />
         </Routes>
       </div>
     </BrowserRouter>

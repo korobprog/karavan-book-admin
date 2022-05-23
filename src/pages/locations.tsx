@@ -1,36 +1,15 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-import { Button, Layout, PageHeader, Tooltip, Table, Tag, Divider } from "antd";
+import { Button, Layout, PageHeader, Tooltip, Table, Divider } from "antd";
 import { CalculatorOutlined, LogoutOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
 import { Spinner } from "../shared/components/Spinner";
 import { useUser } from "../firebase/useUser";
-import { useOperations } from "../firebase/useOperations";
-import {
-  LocationDoc,
-  StatisticType,
-  useLocations,
-} from "../firebase/useLocations";
-
-type StatisticViewType = "count" | "points" | "all";
-
-const getStatText = (view: StatisticViewType, statistic?: StatisticType) => {
-  let result = "";
-  if (view === "count" || view === "all") {
-    result = `${statistic?.count || 0} шт.`;
-  }
-  if (view === "all") {
-    result += ", ";
-  }
-  if (view === "points" || view === "all") {
-    result += `баллы: ${statistic?.points || 0}`;
-  }
-
-  return result;
-};
+import { LocationDoc, useLocations } from "../firebase/useLocations";
+import { LocationStatistic } from "../shared/components/LocationStatistic";
 
 export const Locations = () => {
   const auth = getAuth();
@@ -38,8 +17,8 @@ export const Locations = () => {
 
   const navigate = useNavigate();
 
-  const { locationsDocData, loading: locationsLoading } = useLocations({});
-  const { operationsDocData, loading: operationLoading } = useOperations();
+  const { locations, loading: locationsLoading } = useLocations({});
+  // const { operationsDocData, loading: operationLoading } = useOperations();
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -50,7 +29,7 @@ export const Locations = () => {
     }
   }, [user, profile, userLoading, loading, navigate]);
 
-  if (loading || operationLoading) {
+  if (loading || locationsLoading) {
     return <Spinner />;
   }
 
@@ -82,29 +61,9 @@ export const Locations = () => {
       title: "Распространено в 2022",
       dataIndex: "statistic",
       key: "statistic",
-      render: (statistic: LocationDoc["statistic"]) => {
-        const { online, primary, other, total } = statistic?.[2022] || {};
-        const view = "all";
-
-        return (
-          <>
-            {Boolean(total) && (
-              <Tag color="magenta">{"Всего " + getStatText(view, total)}</Tag>
-            )}
-            {Boolean(primary) && (
-              <Tag color="gold">{"ШП " + getStatText(view, primary)}</Tag>
-            )}
-            {Boolean(other) && (
-              <Tag color="lime">{"Других " + getStatText(view, other)}</Tag>
-            )}
-            {Boolean(online) && (
-              <Tag color="geekblue">
-                {"Онлайн " + getStatText(view, online)}
-              </Tag>
-            )}
-          </>
-        );
-      },
+      render: (stat: LocationDoc["statistic"]) => (
+        <LocationStatistic statistic={stat} />
+      ),
     },
     {
       title: "Действие",
@@ -113,7 +72,7 @@ export const Locations = () => {
     },
   ];
 
-  const data = locationsDocData?.map((operation, index) => ({
+  const data = locations?.map((operation, index) => ({
     key: operation.id || "" + index,
     name: operation.name,
     country: operation.country,

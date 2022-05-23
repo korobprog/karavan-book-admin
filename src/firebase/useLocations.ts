@@ -5,32 +5,12 @@ import {
   addDoc,
   query,
   where,
-  FirestoreDataConverter,
-  DocumentData,
-  SnapshotOptions,
-  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
+import { StatisticType } from "./statistic";
+import { idConverter } from "./utils";
 
-const idConverter: FirestoreDataConverter<any> = {
-  toFirestore(data): DocumentData {
-    return data;
-  },
-  fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
-    const data = snapshot.data(options);
-    return {
-      ...data,
-      id: snapshot.id,
-    };
-  },
-};
-
-export type StatisticType = {
-  count: number;
-  points: number;
-};
-
-type LocationsStatisticType = {
+export type LocationsStatisticType = {
   primary: StatisticType;
   other: StatisticType;
   online: StatisticType;
@@ -75,5 +55,5 @@ export const useLocations = ({ searchString = "" }: UseLocationsParams) => {
 
   const loading = locationsDocLoading;
 
-  return { locationsDocData, addLocation, loading };
+  return { locations: locationsDocData || [], addLocation, loading };
 };
