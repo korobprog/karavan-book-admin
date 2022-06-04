@@ -2,8 +2,22 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
 import useGoogleSheets from "use-google-sheets";
-import { Button, Layout, PageHeader, Tooltip, Table, Tag } from "antd";
-import { LogoutOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Layout,
+  PageHeader,
+  Tooltip,
+  Table,
+  Tag,
+  Divider,
+  Space,
+  TableColumnsType,
+} from "antd";
+import {
+  LogoutOutlined,
+  PlusCircleOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
@@ -23,7 +37,11 @@ export const Reports = () => {
     sheetId: process.env.REACT_APP_GOOGLE_SHEETS_ID as string,
   });
 
-  const { operationsDocData, loading: operationLoading } = useOperations();
+  const {
+    operationsDocData,
+    loading: operationLoading,
+    deleteOperation,
+  } = useOperations();
 
   useEffect(() => {
     if (!user && !userLoading) {
@@ -42,9 +60,23 @@ export const Reports = () => {
     signOut(auth);
   };
 
+  const onAddOperation = () => {
+    navigate(routes.report);
+  };
+
   const { Content, Footer, Header } = Layout;
 
-  const columns = [
+  const data =
+    operationsDocData?.map((operation, index) => ({
+      key: operation.id || index,
+      date: operation.date,
+      isAuthorized: operation.isAuthorized,
+      name: operation.userName,
+      totalCount: operation.totalCount,
+      books: operation.books,
+    })) || [];
+
+  const columns: TableColumnsType<typeof data[0]> = [
     {
       title: "Статус",
       dataIndex: "isAuthorized",
@@ -94,18 +126,18 @@ export const Reports = () => {
     {
       title: "Действие",
       key: "action",
-      render: (text: string, record: any) => <Button>Подтвердить</Button>,
+      render: (text: string, record) => (
+        <Space>
+          <Button>{record.isAuthorized ? "Подтверждена" : "Подтвердить"}</Button>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => deleteOperation(record.key)}
+          />
+        </Space>
+      ),
     },
   ];
-
-  const data = operationsDocData?.map((operation, index) => ({
-    key: operation.date + index,
-    date: operation.date,
-    isAuthorized: operation.isAuthorized,
-    name: operation.userName,
-    totalCount: operation.totalCount,
-    books: operation.books,
-  }));
 
   return (
     <Layout>
@@ -130,6 +162,16 @@ export const Reports = () => {
 
       <Content>
         <div className="site-layout-content">
+          <Button
+            block
+            size="large"
+            type="primary"
+            icon={<PlusCircleOutlined />}
+            onClick={onAddOperation}
+          >
+            Добавить операцию
+          </Button>
+          <Divider dashed />
           <Table columns={columns} dataSource={data} />
         </div>
       </Content>

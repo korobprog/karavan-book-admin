@@ -3,6 +3,7 @@ export const routes = {
     auth: '/auth',
     registration: '/registration',
     profile: '/profile',
+    report: '/report',
     reports: '/reports',
     users: '/users',
     usersNew: '/users/new',

@@ -18,7 +18,7 @@ export const Users = () => {
 
   const navigate = useNavigate();
 
-  const { usersDocData, usersDocLoading } = useUsers();
+  const { usersDocData, usersDocLoading } = useUsers({});
   const { locations, loading: locationLoading } = useLocations({});
   const locationsHashTable = useMemo(
     () => mapDocsToHashTable<LocationDoc>(locations),

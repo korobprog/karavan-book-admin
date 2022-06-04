@@ -5,8 +5,11 @@ import {
   addDoc,
   query,
   orderBy,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
+import { idConverter } from "./utils";
 
 export type DistributedBook = {
   bookId: number;
@@ -14,6 +17,7 @@ export type DistributedBook = {
 };
 
 export type OperationDoc = {
+  id?: string;
   date: string;
   userId: string;
   userName: string;
@@ -26,21 +30,27 @@ export type OperationDoc = {
 
 export const useOperations = () => {
   const db = getFirestore();
-  const operationRef = collection(
-    db,
-    "operations"
+  const operationsRef = collection(db, "operations").withConverter(
+    idConverter
   ) as CollectionReference<OperationDoc>;
 
   const [operationsDocData, operationsDocLoading] =
     useCollectionData<OperationDoc>(
-      query(operationRef, orderBy("date", "desc"))
+      query(operationsRef, orderBy("date", "desc"))
     );
 
   const addOperation = async (params: OperationDoc) => {
-    addDoc(operationRef, params);
+    addDoc(operationsRef, params);
+  };
+
+  const deleteOperation = async (id?: string | number) => {
+    if (id) {
+      const operationRef = doc(db, "operations", String(id));
+      deleteDoc(operationRef);
+    }
   };
 
   const loading = operationsDocLoading;
 
-  return { addOperation, operationsDocData, loading };
+  return { addOperation, deleteOperation, operationsDocData, loading };
 };

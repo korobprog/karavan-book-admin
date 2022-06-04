@@ -7,6 +7,7 @@ import {
   setDoc,
   addDoc,
   CollectionReference,
+  getDoc,
 } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useDocumentData } from "react-firebase-hooks/firestore";
@@ -73,17 +74,30 @@ export const useUser = () => {
     }
   };
 
-  const addStatistic = async (newBooks: StatisticType) => {
+  const rewriteUserStatistic = (newBooks: StatisticType, user?: UserDoc) => ({
+    ...user,
+    statistic: {
+      "2022": {
+        count: (user?.statistic?.[2022].count || 0) + newBooks.count,
+        points: (user?.statistic?.[2022].points || 0) + newBooks.points,
+      },
+    },
+  });
+
+  const addStatistic = async (
+    newBooks: StatisticType,
+    selectedUserId?: string
+  ) => {
+    if (selectedUserId) {
+      const selectedUserRef = doc(db, "users", selectedUserId) as DocumentReference<UserDoc>;
+      const selectedUser = (await getDoc(selectedUserRef)).data();
+      await setDoc(selectedUserRef, rewriteUserStatistic(newBooks, selectedUser));
+      return;
+    }
+
     if (user && userRef) {
-      await setDoc(userRef, {
-        ...profile,
-        statistic: {
-          "2022": {
-            count: (profile.statistic?.[2022].count || 0) + newBooks.count,
-            points: (profile.statistic?.[2022].points || 0) + newBooks.points,
-          },
-        },
-      });
+      await setDoc(userRef, rewriteUserStatistic(newBooks, profile));
+      return;
     }
   };
 

@@ -1,8 +1,9 @@
+import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Auth from "./pages/auth";
 import Registration from "./pages/registration";
 import Home from "./pages/home";
-import React from "react";
+import Report from "./pages/report";
 import { routes } from "././shared/routes";
 import { Reports } from "./pages/reports";
 import { Locations } from "./pages/locations";
@@ -18,6 +19,7 @@ function App() {
           <Route path={routes.auth} element={<Auth />} />
           <Route path={routes.registration} element={<Registration />} />
           <Route path={routes.reports} element={<Reports />} />
+          <Route path={routes.report} element={<Report />} />
           <Route path={routes.locations} element={<Locations />} />
           <Route path={routes.users} element={<Users />} />
           <Route path={routes.usersNew} element={<UsersNew />} />
