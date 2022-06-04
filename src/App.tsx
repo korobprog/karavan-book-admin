@@ -7,6 +7,7 @@ import { routes } from "././shared/routes";
 import { Reports } from "./pages/reports";
 import { Locations } from "./pages/locations";
 import { Users } from "./pages/users";
+import { UsersNew } from "./pages/UsersNew";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path={routes.reports} element={<Reports />} />
           <Route path={routes.locations} element={<Locations />} />
           <Route path={routes.users} element={<Users />} />
+          <Route path={routes.usersNew} element={<UsersNew />} />
         </Routes>
       </div>
     </BrowserRouter>

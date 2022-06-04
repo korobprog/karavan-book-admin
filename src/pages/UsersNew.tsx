@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
-import {
-  Button,
-  Layout,
-  PageHeader,
-  Tooltip,
-  Typography,
-  Form,
-  Input,
-  Select,
-} from "antd";
+import { Button, Layout, PageHeader, Tooltip, Form, Input, Select } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
@@ -21,13 +11,12 @@ import { LocationSelect } from "../shared/components/LocationSelect";
 import { useLocations } from "../firebase/useLocations";
 import { useDebouncedCallback } from "use-debounce/lib";
 
-const Profile = () => {
-  const { profile, setProfile, loading: userLoading } = useUser();
+export const UsersNew = () => {
+  const { profile, addNewUnattachedProfile, user, loading, userLoading } =
+    useUser();
   const auth = getAuth();
-  const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
   const { Content, Footer, Header } = Layout;
-  const { Title, Paragraph } = Typography;
   const { Option } = Select;
 
   const [locationSearchString, setLocationSearchString] = useState("");
@@ -36,10 +25,14 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    if (!user && !loading) {
+    if (!user && !userLoading) {
       navigate(routes.auth);
     }
-  }, [user, loading, navigate]);
+
+    if (profile.role !== "admin" && !loading) {
+      navigate(routes.root);
+    }
+  }, [user, profile, userLoading, loading, navigate]);
 
   const onLocationChange = useDebouncedCallback((value: string) => {
     setLocationSearchString(value.charAt(0).toUpperCase() + value.slice(1));
@@ -66,10 +59,10 @@ const Profile = () => {
   };
 
   const onFinish = ({ phone, prefix, ...formValues }: any) => {
-    setProfile({
+    addNewUnattachedProfile({
       ...formValues,
       phone: `${prefix}${phone}`,
-    }).then(() => navigate(routes.root));
+    }).then(() => navigate(routes.users));
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -93,7 +86,7 @@ const Profile = () => {
     <Layout>
       <Header className="site-page-header">
         <PageHeader
-          title="УЧЕТ КНИГ"
+          title="СОЗДАНИЕ НОВОГО ПОЛЬЗОВАТЕЛЯ"
           className="page-header"
           avatar={{ src: BbtLogo }}
           extra={[
@@ -111,9 +104,6 @@ const Profile = () => {
 
       <Content>
         <div className="site-layout-content">
-          <Title className="site-page-title" level={2}>
-            Привет, {profile.name || user?.displayName || "друг"}
-          </Title>
           <Form
             name="basic"
             initialValues={{ remember: true }}
@@ -122,13 +112,11 @@ const Profile = () => {
             autoComplete="off"
             {...layout}
           >
-            <Paragraph>Обязательно заполните Ваш профиль</Paragraph>
-
             <Form.Item
               name="name"
-              label="Ваше Ф.И.О"
+              label="Ф.И.О"
               rules={[{ required: true }]}
-              initialValue={profile.name || user.displayName || ""}
+              initialValue={""}
             >
               <Input />
             </Form.Item>
@@ -142,9 +130,9 @@ const Profile = () => {
             </Form.Item>
             <Form.Item
               name="city"
-              label="Ваш город"
+              label="Город"
               rules={[{ required: true }]}
-              initialValue={profile.city || ""}
+              initialValue={""}
             >
               <LocationSelect
                 onSearch={onLocationChange}
@@ -156,28 +144,42 @@ const Profile = () => {
             </Form.Item>
             <Form.Item
               name="phone"
-              label="Ваш телефон"
+              label="Телефон"
               rules={[
                 {
                   required: true,
-                  message: "Пожалуйста, введите свой номер телефона!",
+                  message: "Пожалуйста, введите номер телефона!",
                 },
               ]}
-              initialValue={profile.phone || ""}
+              initialValue={""}
             >
               <Input addonBefore={prefixSelector} style={{ width: "100%" }} />
             </Form.Item>
             <Form.Item
+              name="email"
+              label="email"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, введите email",
+                },
+              ]}
+              initialValue={""}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
               name="address"
-              label="Ваш адрес"
+              label="Адрес"
               rules={[{ required: false }]}
               initialValue={profile.address || ""}
             >
               <Input />
             </Form.Item>
+
             <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
               <Button type="primary" htmlType="submit">
-                СОХРАНИТЬ
+                ДОБАВИТЬ
               </Button>
             </Form.Item>
           </Form>
@@ -188,5 +190,3 @@ const Profile = () => {
     </Layout>
   );
 };
-
-export default Profile;

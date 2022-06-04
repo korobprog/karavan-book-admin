@@ -1,9 +1,12 @@
 import { getAuth } from "firebase/auth";
 import {
   doc,
+  collection,
   DocumentReference,
   getFirestore,
   setDoc,
+  addDoc,
+  CollectionReference,
 } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useDocumentData } from "react-firebase-hooks/firestore";
@@ -24,6 +27,8 @@ export type UserDoc = {
   statistic?: {
     "2022": StatisticType;
   };
+  email?: string;
+  isUnattached?: boolean;
 };
 
 export const useUser = () => {
@@ -33,6 +38,9 @@ export const useUser = () => {
   const userRef = (
     user ? doc(db, "users", user?.uid).withConverter(idConverter) : null
   ) as DocumentReference<UserDoc> | null;
+  const usersRef = (
+    user ? collection(db, "users").withConverter(idConverter) : null
+  ) as CollectionReference<UserDoc> | null;
 
   const [userDocData, userDocLoading] = useDocumentData<UserDoc>(userRef);
 
@@ -56,6 +64,12 @@ export const useUser = () => {
   const setProfile = async (newProfile: UserDoc) => {
     if (user && userRef) {
       await setDoc(userRef, { ...profile, ...newProfile });
+    }
+  };
+
+  const addNewUnattachedProfile = async (newProfile: UserDoc) => {
+    if (user && usersRef) {
+      await addDoc(usersRef, { ...newProfile, isUnattached: true });
     }
   };
 
@@ -84,6 +98,7 @@ export const useUser = () => {
     toggleFavorite,
     loading,
     setProfile,
+    addNewUnattachedProfile,
     profile,
   };
 };

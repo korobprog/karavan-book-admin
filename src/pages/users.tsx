@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-import { Button, Layout, PageHeader, Tooltip, Table } from "antd";
-import { LogoutOutlined } from "@ant-design/icons";
+import { Button, Layout, PageHeader, Tooltip, Table, Divider } from "antd";
+import { LogoutOutlined, UserAddOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
@@ -40,6 +40,10 @@ export const Users = () => {
 
   const onLogout = () => {
     signOut(auth);
+  };
+
+  const onAddUser = () => {
+    navigate(routes.usersNew);
   };
 
   const { Content, Footer, Header } = Layout;
@@ -127,6 +131,16 @@ export const Users = () => {
 
       <Content>
         <div className="site-layout-content">
+          <Button
+            block
+            size="large"
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={onAddUser}
+          >
+            Добавить пользователя
+          </Button>
+          <Divider dashed />
           <Table columns={columns} dataSource={data} scroll={{ x: true }} />
         </div>
       </Content>
