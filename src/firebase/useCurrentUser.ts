@@ -17,7 +17,7 @@ export const useCurrentUser = () => {
   const [userDocData, userDocLoading] = useDocumentData<UserDoc>(userRef);
   const userPreloading = userRef && !userDocData;
   
-  const profile = userDocData || {};
+  const profile = userDocData;
   const favorite = profile?.favorite || [];
 
   const loading = userLoading || userDocLoading || userPreloading;

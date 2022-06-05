@@ -58,7 +58,7 @@ export const Denied = ({ currentUser }: Props) => {
             Доступ закрыт
           </Title>
           <Paragraph>
-            Уважаемый {profile.name || user?.displayName || "друг"}, Ваш аккаунт
+            Уважаемый {profile?.name || user?.displayName || "друг"}, Ваш аккаунт
             не обладает правами администратора.
           </Paragraph>
           <Paragraph>

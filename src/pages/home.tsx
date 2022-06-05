@@ -39,14 +39,14 @@ const Home = ({ currentUser }: Props) => {
   const { Content, Footer, Header } = Layout;
   const { Title, Paragraph } = Typography;
 
-  if (profile.role !== "admin") {
+  if (profile?.role !== "admin") {
     return (
       <div className="site-layout-content">
         <Title className="site-page-title" level={2}>
           Доступ закрыт
         </Title>
         <Paragraph>
-          Уважаемый {profile.name || user?.displayName || "друг"}, Ваш аккаунт
+          Уважаемый {profile?.name || user?.displayName || "друг"}, Ваш аккаунт
           не обладает правами администратора.
         </Paragraph>
         <Paragraph>

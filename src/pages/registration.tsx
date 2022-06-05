@@ -21,10 +21,9 @@ type Props = {
 
 const Registration = ({ currentUser }: Props) => {
   const { auth } = currentUser;
-  const [createUserWithEmailAndPassword, user] =
+  const [createUserWithEmailAndPassword] =
     useCreateUserWithEmailAndPassword(auth);
   const navigate = useNavigate();
-  console.log("user", user);
 
   const onFinish = ({ email, password }: any) => {
     createUserWithEmailAndPassword(email, password).then((user) => {

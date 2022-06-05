@@ -29,8 +29,8 @@ const Auth = ({ currentUser }: Props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if ((googleUser || signedUser) && !loading) {
-      if (profile.name) {
+    if ((googleUser || signedUser || profile) && !loading) {
+      if (profile?.name) {
         navigate(routes.root);
       } else {
         navigate(routes.profile);

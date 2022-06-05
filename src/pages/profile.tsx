@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth, signOut } from "firebase/auth";
 import {
   Button,
@@ -111,78 +110,82 @@ const Profile = ({ currentUser }: Props) => {
       </Header>
 
       <Content>
-        <div className="site-layout-content">
-          <Title className="site-page-title" level={2}>
-            Привет, {profile.name || user?.displayName || "друг"}
-          </Title>
-          <Form
-            name="basic"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-            {...layout}
-          >
-            <Paragraph>Обязательно заполните Ваш профиль</Paragraph>
+        {profile ? (
+          <div className="site-layout-content">
+            <Title className="site-page-title" level={2}>
+              Привет, {profile.name || user?.displayName || "друг"}
+            </Title>
+            <Form
+              name="basic"
+              initialValues={{ remember: true }}
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              {...layout}
+            >
+              <Paragraph>Обязательно заполните Ваш профиль</Paragraph>
 
-            <Form.Item
-              name="name"
-              label="Ваше Ф.И.О"
-              rules={[{ required: true }]}
-              initialValue={profile.name || user?.displayName || ""}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="nameSpiritual"
-              label="Ваше духовное имя"
-              rules={[{ required: false }]}
-              initialValue={profile.nameSpiritual || ""}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="city"
-              label="Ваш город"
-              rules={[{ required: true }]}
-              initialValue={profile.city || ""}
-            >
-              <LocationSelect
-                onSearch={onLocationChange}
-                onAddNewLocation={onAddNewLocation}
-                locationSearchString={locationSearchString}
+              <Form.Item
+                name="name"
+                label="Ваше Ф.И.О"
+                rules={[{ required: true }]}
+                initialValue={profile.name || user?.displayName || ""}
               >
-                {locationOptions}
-              </LocationSelect>
-            </Form.Item>
-            <Form.Item
-              name="phone"
-              label="Ваш телефон"
-              rules={[
-                {
-                  required: true,
-                  message: "Пожалуйста, введите свой номер телефона!",
-                },
-              ]}
-              initialValue={profile.phone || ""}
-            >
-              <Input addonBefore={prefixSelector} style={{ width: "100%" }} />
-            </Form.Item>
-            <Form.Item
-              name="address"
-              label="Ваш адрес"
-              rules={[{ required: false }]}
-              initialValue={profile.address || ""}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-              <Button type="primary" htmlType="submit">
-                СОХРАНИТЬ
-              </Button>
-            </Form.Item>
-          </Form>
-        </div>
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="nameSpiritual"
+                label="Ваше духовное имя"
+                rules={[{ required: false }]}
+                initialValue={profile.nameSpiritual || ""}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="city"
+                label="Ваш город"
+                rules={[{ required: true }]}
+                initialValue={profile.city || ""}
+              >
+                <LocationSelect
+                  onSearch={onLocationChange}
+                  onAddNewLocation={onAddNewLocation}
+                  locationSearchString={locationSearchString}
+                >
+                  {locationOptions}
+                </LocationSelect>
+              </Form.Item>
+              <Form.Item
+                name="phone"
+                label="Ваш телефон"
+                rules={[
+                  {
+                    required: true,
+                    message: "Пожалуйста, введите свой номер телефона!",
+                  },
+                ]}
+                initialValue={profile.phone || ""}
+              >
+                <Input addonBefore={prefixSelector} style={{ width: "100%" }} />
+              </Form.Item>
+              <Form.Item
+                name="address"
+                label="Ваш адрес"
+                rules={[{ required: false }]}
+                initialValue={profile.address || ""}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
+                <Button type="primary" htmlType="submit">
+                  СОХРАНИТЬ
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+        ) : (
+          <Spinner />
+        )}
       </Content>
 
       <Footer></Footer>
