@@ -1,46 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { getAuth, signOut } from "firebase/auth";
+import React, { useState } from "react";
+import { signOut } from "firebase/auth";
 import { Button, Layout, PageHeader, Tooltip, Form, Input, Select } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
 import { useUser } from "../firebase/useUser";
 import { LocationSelect } from "../shared/components/LocationSelect";
 import { useLocations } from "../firebase/useLocations";
 import { useDebouncedCallback } from "use-debounce/lib";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-export const UsersNew = () => {
-  const { profile, addNewUnattachedProfile, user, loading, userLoading } =
-    useUser();
-  const auth = getAuth();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+export const UsersNew = ({ currentUser }: Props) => {
+  const { addNewUnattachedProfile } = useUser({ currentUser });
+  const { auth } = currentUser;
   const navigate = useNavigate();
   const { Content, Footer, Header } = Layout;
   const { Option } = Select;
 
   const [locationSearchString, setLocationSearchString] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { addLocation, locations } = useLocations({
     searchString: locationSearchString,
   });
 
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate(routes.auth);
-    }
-
-    if (profile.role !== "admin" && !loading) {
-      navigate(routes.root);
-    }
-  }, [user, profile, userLoading, loading, navigate]);
-
   const onLocationChange = useDebouncedCallback((value: string) => {
     setLocationSearchString(value.charAt(0).toUpperCase() + value.slice(1));
   }, 1000);
-
-  if (!user || userLoading) {
-    return <Spinner />;
-  }
 
   const onLogout = () => {
     signOut(auth);
@@ -59,10 +49,13 @@ export const UsersNew = () => {
   };
 
   const onFinish = ({ phone, prefix, ...formValues }: any) => {
+    setIsSubmitting(true);
     addNewUnattachedProfile({
       ...formValues,
       phone: `${prefix}${phone}`,
-    }).then(() => navigate(routes.users));
+    })
+      .then(() => navigate(routes.users))
+      .finally(() => setIsSubmitting(false));
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -88,6 +81,7 @@ export const UsersNew = () => {
         <PageHeader
           title="СОЗДАНИЕ НОВОГО ПОЛЬЗОВАТЕЛЯ"
           className="page-header"
+          onBack={() => navigate(routes.users)}
           avatar={{ src: BbtLogo }}
           extra={[
             <Tooltip title="Выйти" key="logout">
@@ -122,9 +116,9 @@ export const UsersNew = () => {
             </Form.Item>
             <Form.Item
               name="nameSpiritual"
-              label="Ваше духовное имя"
+              label="Духовное имя"
               rules={[{ required: false }]}
-              initialValue={profile.nameSpiritual || ""}
+              initialValue={""}
             >
               <Input />
             </Form.Item>
@@ -172,13 +166,13 @@ export const UsersNew = () => {
               name="address"
               label="Адрес"
               rules={[{ required: false }]}
-              initialValue={profile.address || ""}
+              initialValue={""}
             >
               <Input />
             </Form.Item>
 
             <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 ДОБАВИТЬ
               </Button>
             </Form.Item>

@@ -1,4 +1,3 @@
-import { getAuth } from "firebase/auth";
 import {
   doc,
   collection,
@@ -9,9 +8,8 @@ import {
   CollectionReference,
   getDoc,
 } from "firebase/firestore";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useDocumentData } from "react-firebase-hooks/firestore";
 import { StatisticType } from "./statistic";
+import { CurrentUser } from "./useCurrentUser";
 import { idConverter } from "./utils";
 
 export type UserRoles = "admin";
@@ -32,21 +30,19 @@ export type UserDoc = {
   isUnattached?: boolean;
 };
 
-export const useUser = () => {
-  const auth = getAuth();
+type Params = {
+  currentUser: CurrentUser;
+};
+
+export const useUser = ({ currentUser }: Params) => {
   const db = getFirestore();
-  const [user, userLoading] = useAuthState(auth);
+  const { user, favorite, profile } = currentUser;
   const userRef = (
     user ? doc(db, "users", user?.uid).withConverter(idConverter) : null
   ) as DocumentReference<UserDoc> | null;
   const usersRef = (
     user ? collection(db, "users").withConverter(idConverter) : null
   ) as CollectionReference<UserDoc> | null;
-
-  const [userDocData, userDocLoading] = useDocumentData<UserDoc>(userRef);
-
-  const profile = userDocData || {};
-  const favorite = profile?.favorite || [];
 
   const toggleFavorite = async (favoriteId: string) => {
     if (user && userRef) {
@@ -89,9 +85,16 @@ export const useUser = () => {
     selectedUserId?: string
   ) => {
     if (selectedUserId) {
-      const selectedUserRef = doc(db, "users", selectedUserId) as DocumentReference<UserDoc>;
+      const selectedUserRef = doc(
+        db,
+        "users",
+        selectedUserId
+      ) as DocumentReference<UserDoc>;
       const selectedUser = (await getDoc(selectedUserRef)).data();
-      await setDoc(selectedUserRef, rewriteUserStatistic(newBooks, selectedUser));
+      await setDoc(
+        selectedUserRef,
+        rewriteUserStatistic(newBooks, selectedUser)
+      );
       return;
     }
 
@@ -101,18 +104,11 @@ export const useUser = () => {
     }
   };
 
-  const loading = userLoading || userDocLoading;
 
   return {
-    auth,
-    user,
-    userLoading,
-    favorite,
     addStatistic,
     toggleFavorite,
-    loading,
     setProfile,
     addNewUnattachedProfile,
-    profile,
   };
 };

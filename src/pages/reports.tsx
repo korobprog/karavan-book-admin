@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import useGoogleSheets from "use-google-sheets";
 import {
   Button,
@@ -21,14 +21,16 @@ import {
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
-import { useUser } from "../firebase/useUser";
 import { useOperations } from "../firebase/useOperations";
 import moment from "moment";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-export const Reports = () => {
-  const auth = getAuth();
-  const { profile, userLoading, user, loading } = useUser();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+export const Reports = ({ currentUser }: Props) => {
+  const { auth, loading } = currentUser;
 
   const navigate = useNavigate();
 
@@ -42,19 +44,6 @@ export const Reports = () => {
     loading: operationLoading,
     deleteOperation,
   } = useOperations();
-
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate(routes.auth);
-    }
-    if (profile.role !== "admin" && !loading) {
-      navigate(routes.root);
-    }
-  }, [user, profile, userLoading, loading, navigate]);
-
-  if (booksLoading || loading || operationLoading) {
-    return <Spinner />;
-  }
 
   const onLogout = () => {
     signOut(auth);
@@ -128,7 +117,9 @@ export const Reports = () => {
       key: "action",
       render: (text: string, record) => (
         <Space>
-          <Button>{record.isAuthorized ? "Подтверждена" : "Подтвердить"}</Button>
+          <Button>
+            {record.isAuthorized ? "Подтверждена" : "Подтвердить"}
+          </Button>
           <Button
             danger
             icon={<DeleteOutlined />}
@@ -172,7 +163,11 @@ export const Reports = () => {
             Добавить операцию
           </Button>
           <Divider dashed />
-          <Table columns={columns} dataSource={data} />
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={booksLoading || loading || operationLoading}
+          />
         </div>
       </Content>
       <Footer></Footer>

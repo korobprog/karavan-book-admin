@@ -12,22 +12,21 @@ import {
 import GoogleButton from "react-google-button";
 import { useSignInWithGoogle } from "react-firebase-hooks/auth";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { getAuth } from "firebase/auth";
 import BbtLogo from "../images/bbt-logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
-import { useUser } from "../firebase/useUser";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-const Auth = () => {
-  const auth = getAuth();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+const Auth = ({ currentUser }: Props) => {
+  const { auth, profile, loading } = currentUser;
   const [signInWithGoogle, googleUser] = useSignInWithGoogle(auth);
   const [signInWithEmailAndPassword, signedUser, , emailError] =
     useSignInWithEmailAndPassword(auth);
   const navigate = useNavigate();
-  const { profile, loading } = useUser();
-
-  console.log("googleUser", googleUser);
-  console.log("signedUser", signedUser);
 
   useEffect(() => {
     if ((googleUser || signedUser) && !loading) {

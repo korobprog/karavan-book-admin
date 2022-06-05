@@ -20,11 +20,16 @@ import { useUser } from "../firebase/useUser";
 import { LocationSelect } from "../shared/components/LocationSelect";
 import { useLocations } from "../firebase/useLocations";
 import { useDebouncedCallback } from "use-debounce/lib";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-const Profile = () => {
-  const { profile, setProfile, loading: userLoading } = useUser();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+const Profile = ({ currentUser }: Props) => {
+  const { setProfile } = useUser({ currentUser });
+  const { profile, loading, user } = currentUser;
   const auth = getAuth();
-  const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
   const { Content, Footer, Header } = Layout;
   const { Title, Paragraph } = Typography;
@@ -44,10 +49,6 @@ const Profile = () => {
   const onLocationChange = useDebouncedCallback((value: string) => {
     setLocationSearchString(value.charAt(0).toUpperCase() + value.slice(1));
   }, 1000);
-
-  if (!user || userLoading) {
-    return <Spinner />;
-  }
 
   const onLogout = () => {
     signOut(auth);
@@ -128,7 +129,7 @@ const Profile = () => {
               name="name"
               label="Ваше Ф.И.О"
               rules={[{ required: true }]}
-              initialValue={profile.name || user.displayName || ""}
+              initialValue={profile.name || user?.displayName || ""}
             >
               <Input />
             </Form.Item>

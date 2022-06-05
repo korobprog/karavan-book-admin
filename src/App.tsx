@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import Auth from "./pages/auth";
 import Registration from "./pages/registration";
 import Home from "./pages/home";
@@ -9,23 +9,67 @@ import { Reports } from "./pages/reports";
 import { Locations } from "./pages/locations";
 import { Users } from "./pages/users";
 import { UsersNew } from "./pages/UsersNew";
+import { useCurrentUser } from "./firebase/useCurrentUser";
+import { Denied } from "./pages/denied";
+import { Loading } from "./pages/loading";
+
+import './App.less';
 
 function App() {
+  const currentUser = useCurrentUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!currentUser.user && !currentUser.loading) {
+      navigate(routes.auth);
+    }
+  }, [currentUser.loading, currentUser.user, navigate]);
+
+  if (currentUser.loading) {
+    return <Loading currentUser={currentUser} />;
+  }
+
+  if (currentUser.profile.role !== "admin") {
+    return <Denied currentUser={currentUser} />;
+  }
+
   return (
-    <BrowserRouter>
-      <div>
-        <Routes>
-          <Route path={routes.root} element={<Home />} />
-          <Route path={routes.auth} element={<Auth />} />
-          <Route path={routes.registration} element={<Registration />} />
-          <Route path={routes.reports} element={<Reports />} />
-          <Route path={routes.report} element={<Report />} />
-          <Route path={routes.locations} element={<Locations />} />
-          <Route path={routes.users} element={<Users />} />
-          <Route path={routes.usersNew} element={<UsersNew />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <div>
+      <Routes>
+        <Route
+          path={routes.root}
+          element={<Home currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.auth}
+          element={<Auth currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.registration}
+          element={<Registration currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.reports}
+          element={<Reports currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.report}
+          element={<Report currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.locations}
+          element={<Locations currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.users}
+          element={<Users currentUser={currentUser} />}
+        />
+        <Route
+          path={routes.usersNew}
+          element={<UsersNew currentUser={currentUser} />}
+        />
+      </Routes>
+    </div>
   );
 }
 

@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import useGoogleSheets from "use-google-sheets";
 import {
   Button,
@@ -25,7 +24,6 @@ import {
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
 import { Book, getBooks } from "../shared/helpers/getBooks";
 import { useUser } from "../firebase/useUser";
 import {
@@ -38,25 +36,25 @@ import { LocationSelect } from "../shared/components/LocationSelect";
 import { useDebouncedCallback } from "use-debounce/lib";
 import { UserSelect } from "../shared/components/UserSelect";
 import { useUsers } from "../firebase/useUsers";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
 type FormValues = Record<number, number> & {
   locationId: string;
   userId: string;
 };
 
-const Report = () => {
-  const auth = getAuth();
-  const {
-    profile,
-    addStatistic,
-    favorite,
-    toggleFavorite,
-    loading: userLoading,
-  } = useUser();
-  const [user, loading] = useAuthState(auth);
+type Props = {
+  currentUser: CurrentUser;
+};
+
+const Report = ({ currentUser }: Props) => {
+  const { auth, profile, user, favorite } = currentUser;
+  const { addStatistic, toggleFavorite } = useUser({ currentUser });
+
   const [searchString, setSearchString] = useState("");
   const [locationSearchString, setLocationSearchString] = useState("");
   const [userSearchString, setUserSearchString] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -73,12 +71,6 @@ const Report = () => {
     searchString: userSearchString,
   });
 
-  useEffect(() => {
-    if (!user && !loading) {
-      navigate(routes.auth);
-    }
-  }, [user, loading, navigate]);
-
   const onLocationChange = useDebouncedCallback((value: string) => {
     setLocationSearchString(value.charAt(0).toUpperCase() + value.slice(1));
   }, 1000);
@@ -86,10 +78,6 @@ const Report = () => {
   const onUserChange = useDebouncedCallback((value: string) => {
     setUserSearchString(value);
   }, 1000);
-
-  if (booksLoading || userLoading) {
-    return <Spinner />;
-  }
 
   const onLogout = () => {
     signOut(auth);
@@ -124,6 +112,7 @@ const Report = () => {
 
   function onFinish(formValues: FormValues) {
     if (user && profile.name) {
+      setIsSubmitting(true);
       const { locationId, userId, ...bookIdsWithCounts } = formValues;
 
       let totalCount = 0;
@@ -157,7 +146,9 @@ const Report = () => {
       Promise.all([
         addStatistic({ count: totalCount, points: totalPoints }, userId),
         addOperation(operation),
-      ]).then(() => navigate(routes.reports));
+      ])
+        .then(() => navigate(routes.reports))
+        .finally(() => setIsSubmitting(false));
     }
   }
 
@@ -246,7 +237,7 @@ const Report = () => {
                 value={searchString}
                 style={{ width: 170 }}
               />
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 Отправить
               </Button>
             </Space>
@@ -254,6 +245,7 @@ const Report = () => {
             <List
               itemLayout="horizontal"
               dataSource={favoriteBooks}
+              loading={booksLoading}
               locale={{
                 emptyText: searchString
                   ? "Не найдено избранного"
@@ -288,6 +280,7 @@ const Report = () => {
             <List
               itemLayout="horizontal"
               dataSource={otherBooks}
+              loading={booksLoading}
               locale={{ emptyText: "Не найдено книг" }}
               renderItem={(book) => (
                 <List.Item

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { signOut } from "firebase/auth";
 import { Button, Divider, Layout, PageHeader, Tooltip, Typography } from "antd";
 import {
@@ -12,18 +12,15 @@ import {
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
-import { useUser } from "../firebase/useUser";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-const Home = () => {
-  const { auth, user, profile, loading, userLoading } = useUser();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+const Home = ({ currentUser }: Props) => {
+  const { auth, user, profile } = currentUser;
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate(routes.auth);
-    }
-  }, [user, userLoading, navigate]);
 
   const onAddReport = () => {
     navigate(routes.reports);
@@ -41,10 +38,6 @@ const Home = () => {
 
   const { Content, Footer, Header } = Layout;
   const { Title, Paragraph } = Typography;
-
-  if (loading) {
-    return <Spinner />;
-  }
 
   if (profile.role !== "admin") {
     return (
@@ -116,12 +109,32 @@ const Home = () => {
             Последние операции
           </Button>
           <Divider dashed />
-          <Button block size="large" icon={<TeamOutlined />} onClick={onUsersSelect}>
+          <Button
+            block
+            size="large"
+            icon={<TeamOutlined />}
+            onClick={onUsersSelect}
+          >
             Пользователи
           </Button>
           <Divider dashed />
-          <Button block size="large" icon={<FlagOutlined />} onClick={onLocationsSelect}>
+          <Button
+            block
+            size="large"
+            icon={<FlagOutlined />}
+            onClick={onLocationsSelect}
+          >
             Города на карте
+          </Button>
+          <Divider />
+          <Button
+            href="https://karavan-book-tracker.web.app/"
+            block
+            size="large"
+            icon={<BookOutlined />}
+            type="dashed"
+          >
+            Перейти в трекер
           </Button>
         </div>
       </Content>

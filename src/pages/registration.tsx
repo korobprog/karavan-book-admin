@@ -9,14 +9,18 @@ import {
   Typography,
   Space,
 } from "antd";
-import { getAuth } from "firebase/auth";
 import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import BbtLogo from "../images/bbt-logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-const Registration = () => {
-  const auth = getAuth();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+const Registration = ({ currentUser }: Props) => {
+  const { auth } = currentUser;
   const [createUserWithEmailAndPassword, user] =
     useCreateUserWithEmailAndPassword(auth);
   const navigate = useNavigate();

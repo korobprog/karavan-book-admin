@@ -3,6 +3,6 @@ import React from "react";
 
 export const Spinner = () => (
   <div className="spinner-container">
-    <Spin />
+    <Spin size="large" />
   </div>
 );
