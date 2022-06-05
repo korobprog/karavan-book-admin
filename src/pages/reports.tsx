@@ -167,6 +167,7 @@ export const Reports = ({ currentUser }: Props) => {
             columns={columns}
             dataSource={data}
             loading={booksLoading || loading || operationLoading}
+            scroll={{ x: true }}
           />
         </div>
       </Content>

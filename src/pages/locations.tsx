@@ -102,6 +102,7 @@ export const Locations = ({ currentUser }: Props) => {
             columns={columns}
             dataSource={data}
             loading={locationsLoading}
+            scroll={{ x: true }}
           />
         </div>
       </Content>
