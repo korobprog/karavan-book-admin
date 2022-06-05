@@ -9,16 +9,18 @@ export const useCurrentUser = () => {
   const auth = getAuth();
   const db = getFirestore();
   const [user, userLoading] = useAuthState(auth);
+
   const userRef = (
     user ? doc(db, "users", user?.uid).withConverter(idConverter) : null
   ) as DocumentReference<UserDoc> | null;
 
   const [userDocData, userDocLoading] = useDocumentData<UserDoc>(userRef);
-
+  const userPreloading = userRef && !userDocData;
+  
   const profile = userDocData || {};
   const favorite = profile?.favorite || [];
 
-  const loading = userLoading || userDocLoading;
+  const loading = userLoading || userDocLoading || userPreloading;
 
   return {
     auth,
