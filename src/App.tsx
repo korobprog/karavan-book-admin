@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import Auth from "./pages/auth";
 import Registration from "./pages/registration";
 import Home from "./pages/home";
@@ -13,14 +13,19 @@ import { useCurrentUser } from "./firebase/useCurrentUser";
 import { Denied } from "./pages/denied";
 import { Loading } from "./pages/loading";
 
-import './App.less';
+import "./App.less";
 
 function App() {
   const currentUser = useCurrentUser();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (!currentUser.user && !currentUser.loading) {
+    if (
+      !currentUser.user &&
+      !currentUser.loading &&
+      location.pathname !== routes.registration
+    ) {
       navigate(routes.auth);
     }
   }, [currentUser.loading, currentUser.user, navigate]);

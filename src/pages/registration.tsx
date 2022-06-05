@@ -26,9 +26,9 @@ const Registration = ({ currentUser }: Props) => {
   const navigate = useNavigate();
 
   const onFinish = ({ email, password }: any) => {
-    createUserWithEmailAndPassword(email, password).then((user) => {
+    createUserWithEmailAndPassword(email, password).then(() => {
       navigate(routes.auth);
-    });
+    }).catch((console.error));
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -79,6 +79,7 @@ const Registration = ({ currentUser }: Props) => {
               name="password"
               rules={[
                 { required: true, message: "Пожалуйста, введите ваш пароль!" },
+                { len: 6, message: 'Пароль должен быть не менее 6 символов'}
               ]}
             >
               <Input.Password />
