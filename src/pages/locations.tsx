@@ -1,40 +1,25 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { Button, Layout, PageHeader, Tooltip, Table, Divider } from "antd";
 import { CalculatorOutlined, LogoutOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
-import { useUser } from "../firebase/useUser";
 import { LocationDoc, useLocations } from "../firebase/useLocations";
 import { LocationStatistic } from "../shared/components/LocationStatistic";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-export const Locations = () => {
-  const auth = getAuth();
-  const { profile, userLoading, user, loading } = useUser();
+type Props = {
+  currentUser: CurrentUser;
+};
 
+export const Locations = ({ currentUser }: Props) => {
   const navigate = useNavigate();
-
   const { locations, loading: locationsLoading } = useLocations({});
-  // const { operationsDocData, loading: operationLoading } = useOperations();
-
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate(routes.auth);
-    }
-    if (profile.role !== "admin" && !loading) {
-      navigate(routes.root);
-    }
-  }, [user, profile, userLoading, loading, navigate]);
-
-  if (loading || locationsLoading) {
-    return <Spinner />;
-  }
 
   const onLogout = () => {
-    signOut(auth);
+    signOut(currentUser.auth);
   };
 
   const onCalculate = () => {};
@@ -78,7 +63,7 @@ export const Locations = () => {
     country: operation.country,
     statistic: operation.statistic,
     coordinates: operation.coordinates,
-  }));
+  })) || [];
 
   return (
     <Layout>
@@ -113,7 +98,12 @@ export const Locations = () => {
             Пересчитать статистику
           </Button>
           <Divider dashed />
-          <Table columns={columns} dataSource={data} />
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={locationsLoading}
+            scroll={{ x: true }}
+          />
         </div>
       </Content>
       <Footer></Footer>

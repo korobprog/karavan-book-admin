@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -12,40 +12,40 @@ import {
 import GoogleButton from "react-google-button";
 import { useSignInWithGoogle } from "react-firebase-hooks/auth";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
-import { getAuth } from "firebase/auth";
 import BbtLogo from "../images/bbt-logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
-import { useUser } from "../firebase/useUser";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-const Auth = () => {
-  const auth = getAuth();
-  const [signInWithGoogle, googleUser] = useSignInWithGoogle(auth);
-  const [signInWithEmailAndPassword, signedUser, , emailError] =
+type Props = {
+  currentUser: CurrentUser;
+};
+
+const Auth = ({ currentUser }: Props) => {
+  const { auth, user } = currentUser;
+  const [signInWithGoogle, , , googleError] = useSignInWithGoogle(auth);
+  const [signInWithEmailAndPassword, , , emailError] =
     useSignInWithEmailAndPassword(auth);
   const navigate = useNavigate();
-  const { profile, loading } = useUser();
-
-  console.log("googleUser", googleUser);
-  console.log("signedUser", signedUser);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if ((googleUser || signedUser) && !loading) {
-      if (profile.name) {
-        navigate(routes.root);
-      } else {
-        navigate(routes.profile);
-      }
+    if (user) {
+      navigate(routes.root);
     }
-  }, [googleUser, signedUser, navigate, profile, loading]);
+  }, [navigate, user]);
 
   const onFinish = ({ email, password }: any) => {
-    signInWithEmailAndPassword(email, password);
+    setIsSubmitting(true);
+    signInWithEmailAndPassword(email, password).finally(() => {
+      setIsSubmitting(false);
+    });
   };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
   };
+
   const { Header, Footer, Content } = Layout;
   const { Title, Text } = Typography;
 
@@ -113,7 +113,7 @@ const Auth = () => {
               }
             >
               <Space>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={isSubmitting}>
                   Войти
                 </Button>
                 <Link to={routes.registration}>Регистрация</Link>
@@ -125,6 +125,11 @@ const Auth = () => {
               label="Войти через Google"
               onClick={() => signInWithGoogle()}
             />
+            {googleError && (
+              <Text type="danger">
+                При входе произошла ошибка: {googleError}
+              </Text>
+            )}
           </Form>
         </div>
       </Content>

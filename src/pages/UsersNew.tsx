@@ -1,15 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { getAuth, signOut } from "firebase/auth";
-import {
-  Button,
-  Layout,
-  PageHeader,
-  Tooltip,
-  Typography,
-  Form,
-  Input,
-  Select,
-} from "antd";
+import React, { useState } from "react";
+import { signOut } from "firebase/auth";
+import { Button, Layout, PageHeader, Tooltip, Form, Input, Select } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
@@ -24,25 +15,18 @@ type Props = {
   currentUser: CurrentUser;
 };
 
-const Profile = ({ currentUser }: Props) => {
-  const { setProfile } = useUser({ currentUser });
-  const { profile, loading, user } = currentUser;
-  const auth = getAuth();
+export const UsersNew = ({ currentUser }: Props) => {
+  const { addNewUnattachedProfile } = useUser({ currentUser });
+  const { auth } = currentUser;
   const navigate = useNavigate();
   const { Content, Footer, Header } = Layout;
-  const { Title, Paragraph } = Typography;
   const { Option } = Select;
 
   const [locationSearchString, setLocationSearchString] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { addLocation, locations } = useLocations({
     searchString: locationSearchString,
   });
-
-  useEffect(() => {
-    if (!user && !loading) {
-      navigate(routes.auth);
-    }
-  }, [user, loading, navigate]);
 
   const onLocationChange = useDebouncedCallback((value: string) => {
     setLocationSearchString(value.charAt(0).toUpperCase() + value.slice(1));
@@ -65,10 +49,13 @@ const Profile = ({ currentUser }: Props) => {
   };
 
   const onFinish = ({ phone, prefix, ...formValues }: any) => {
-    setProfile({
+    setIsSubmitting(true);
+    addNewUnattachedProfile({
       ...formValues,
       phone: `${prefix}${phone}`,
-    }).then(() => navigate(routes.root));
+    })
+      .then(() => navigate(routes.users))
+      .finally(() => setIsSubmitting(false));
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -92,8 +79,9 @@ const Profile = ({ currentUser }: Props) => {
     <Layout>
       <Header className="site-page-header">
         <PageHeader
-          title="УЧЕТ КНИГ"
+          title="СОЗДАНИЕ НОВОГО ПОЛЬЗОВАТЕЛЯ"
           className="page-header"
+          onBack={() => navigate(routes.users)}
           avatar={{ src: BbtLogo }}
           extra={[
             <Tooltip title="Выйти" key="logout">
@@ -110,9 +98,6 @@ const Profile = ({ currentUser }: Props) => {
 
       <Content>
         <div className="site-layout-content">
-          <Title className="site-page-title" level={2}>
-            Привет, {profile?.name || user?.displayName || "друг"}
-          </Title>
           <Form
             name="basic"
             initialValues={{ remember: true }}
@@ -121,29 +106,27 @@ const Profile = ({ currentUser }: Props) => {
             autoComplete="off"
             {...layout}
           >
-            <Paragraph>Обязательно заполните Ваш профиль</Paragraph>
-
             <Form.Item
               name="name"
-              label="Ваше Ф.И.О"
+              label="Ф.И.О"
               rules={[{ required: true }]}
-              initialValue={profile?.name || user?.displayName || ""}
+              initialValue={""}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="nameSpiritual"
-              label="Ваше духовное имя"
+              label="Духовное имя"
               rules={[{ required: false }]}
-              initialValue={profile?.nameSpiritual || ""}
+              initialValue={""}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="city"
-              label="Ваш город"
+              label="Город"
               rules={[{ required: true }]}
-              initialValue={profile?.city || ""}
+              initialValue={""}
             >
               <LocationSelect
                 onSearch={onLocationChange}
@@ -155,28 +138,42 @@ const Profile = ({ currentUser }: Props) => {
             </Form.Item>
             <Form.Item
               name="phone"
-              label="Ваш телефон"
+              label="Телефон"
               rules={[
                 {
                   required: true,
-                  message: "Пожалуйста, введите свой номер телефона!",
+                  message: "Пожалуйста, введите номер телефона!",
                 },
               ]}
-              initialValue={profile?.phone || ""}
+              initialValue={""}
             >
               <Input addonBefore={prefixSelector} style={{ width: "100%" }} />
             </Form.Item>
             <Form.Item
-              name="address"
-              label="Ваш адрес"
-              rules={[{ required: false }]}
-              initialValue={profile?.address || ""}
+              name="email"
+              label="email"
+              rules={[
+                {
+                  required: true,
+                  message: "Пожалуйста, введите email",
+                },
+              ]}
+              initialValue={""}
             >
               <Input />
             </Form.Item>
+            <Form.Item
+              name="address"
+              label="Адрес"
+              rules={[{ required: false }]}
+              initialValue={""}
+            >
+              <Input />
+            </Form.Item>
+
             <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-              <Button type="primary" htmlType="submit">
-                СОХРАНИТЬ
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
+                ДОБАВИТЬ
               </Button>
             </Form.Item>
           </Form>
@@ -187,5 +184,3 @@ const Profile = ({ currentUser }: Props) => {
     </Layout>
   );
 };
-
-export default Profile;

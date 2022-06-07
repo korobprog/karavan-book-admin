@@ -1,13 +1,15 @@
-import { getAuth } from "firebase/auth";
 import {
   doc,
+  collection,
   DocumentReference,
   getFirestore,
   setDoc,
+  addDoc,
+  CollectionReference,
+  getDoc,
 } from "firebase/firestore";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useDocumentData } from "react-firebase-hooks/firestore";
 import { StatisticType } from "./statistic";
+import { CurrentUser } from "./useCurrentUser";
 import { idConverter } from "./utils";
 
 export type UserRoles = "admin";
@@ -24,20 +26,23 @@ export type UserDoc = {
   statistic?: {
     "2022": StatisticType;
   };
+  email?: string;
+  isUnattached?: boolean;
 };
 
-export const useUser = () => {
-  const auth = getAuth();
+type Params = {
+  currentUser: CurrentUser;
+};
+
+export const useUser = ({ currentUser }: Params) => {
   const db = getFirestore();
-  const [user, userLoading] = useAuthState(auth);
+  const { user, favorite, profile } = currentUser;
   const userRef = (
     user ? doc(db, "users", user?.uid).withConverter(idConverter) : null
   ) as DocumentReference<UserDoc> | null;
-
-  const [userDocData, userDocLoading] = useDocumentData<UserDoc>(userRef);
-
-  const profile = userDocData || {};
-  const favorite = profile?.favorite || [];
+  const usersRef = (
+    user ? collection(db, "users").withConverter(idConverter) : null
+  ) as CollectionReference<UserDoc> | null;
 
   const toggleFavorite = async (favoriteId: string) => {
     if (user && userRef) {
@@ -59,31 +64,51 @@ export const useUser = () => {
     }
   };
 
-  const addStatistic = async (newBooks: StatisticType) => {
-    if (user && userRef) {
-      await setDoc(userRef, {
-        ...profile,
-        statistic: {
-          "2022": {
-            count: (profile.statistic?.[2022].count || 0) + newBooks.count,
-            points: (profile.statistic?.[2022].points || 0) + newBooks.points,
-          },
-        },
-      });
+  const addNewUnattachedProfile = async (newProfile: UserDoc) => {
+    if (user && usersRef) {
+      await addDoc(usersRef, { ...newProfile, isUnattached: true });
     }
   };
 
-  const loading = userLoading || userDocLoading;
+  const rewriteUserStatistic = (newBooks: StatisticType, user?: UserDoc) => ({
+    ...user,
+    statistic: {
+      "2022": {
+        count: (user?.statistic?.[2022].count || 0) + newBooks.count,
+        points: (user?.statistic?.[2022].points || 0) + newBooks.points,
+      },
+    },
+  });
+
+  const addStatistic = async (
+    newBooks: StatisticType,
+    selectedUserId?: string
+  ) => {
+    if (selectedUserId) {
+      const selectedUserRef = doc(
+        db,
+        "users",
+        selectedUserId
+      ) as DocumentReference<UserDoc>;
+      const selectedUser = (await getDoc(selectedUserRef)).data();
+      await setDoc(
+        selectedUserRef,
+        rewriteUserStatistic(newBooks, selectedUser)
+      );
+      return;
+    }
+
+    if (user && userRef) {
+      await setDoc(userRef, rewriteUserStatistic(newBooks, profile));
+      return;
+    }
+  };
+
 
   return {
-    auth,
-    user,
-    userLoading,
-    favorite,
     addStatistic,
     toggleFavorite,
-    loading,
     setProfile,
-    profile,
+    addNewUnattachedProfile,
   };
 };

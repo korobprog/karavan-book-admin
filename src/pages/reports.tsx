@@ -1,20 +1,36 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import useGoogleSheets from "use-google-sheets";
-import { Button, Layout, PageHeader, Tooltip, Table, Tag } from "antd";
-import { LogoutOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Layout,
+  PageHeader,
+  Tooltip,
+  Table,
+  Tag,
+  Divider,
+  Space,
+  TableColumnsType,
+} from "antd";
+import {
+  LogoutOutlined,
+  PlusCircleOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
-import { useUser } from "../firebase/useUser";
 import { useOperations } from "../firebase/useOperations";
 import moment from "moment";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-export const Reports = () => {
-  const auth = getAuth();
-  const { profile, userLoading, user, loading } = useUser();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+export const Reports = ({ currentUser }: Props) => {
+  const { auth, loading } = currentUser;
 
   const navigate = useNavigate();
 
@@ -23,28 +39,33 @@ export const Reports = () => {
     sheetId: process.env.REACT_APP_GOOGLE_SHEETS_ID as string,
   });
 
-  const { operationsDocData, loading: operationLoading } = useOperations();
-
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate(routes.auth);
-    }
-    if (profile.role !== "admin" && !loading) {
-      navigate(routes.root);
-    }
-  }, [user, profile, userLoading, loading, navigate]);
-
-  if (booksLoading || loading || operationLoading) {
-    return <Spinner />;
-  }
+  const {
+    operationsDocData,
+    loading: operationLoading,
+    deleteOperation,
+  } = useOperations();
 
   const onLogout = () => {
     signOut(auth);
   };
 
+  const onAddOperation = () => {
+    navigate(routes.report);
+  };
+
   const { Content, Footer, Header } = Layout;
 
-  const columns = [
+  const data =
+    operationsDocData?.map((operation, index) => ({
+      key: operation.id || index,
+      date: operation.date,
+      isAuthorized: operation.isAuthorized,
+      name: operation.userName,
+      totalCount: operation.totalCount,
+      books: operation.books,
+    })) || [];
+
+  const columns: TableColumnsType<typeof data[0]> = [
     {
       title: "Статус",
       dataIndex: "isAuthorized",
@@ -94,18 +115,20 @@ export const Reports = () => {
     {
       title: "Действие",
       key: "action",
-      render: (text: string, record: any) => <Button>Подтвердить</Button>,
+      render: (text: string, record) => (
+        <Space>
+          <Button>
+            {record.isAuthorized ? "Подтверждена" : "Подтвердить"}
+          </Button>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => deleteOperation(record.key)}
+          />
+        </Space>
+      ),
     },
   ];
-
-  const data = operationsDocData?.map((operation, index) => ({
-    key: operation.date + index,
-    date: operation.date,
-    isAuthorized: operation.isAuthorized,
-    name: operation.userName,
-    totalCount: operation.totalCount,
-    books: operation.books,
-  }));
 
   return (
     <Layout>
@@ -130,7 +153,22 @@ export const Reports = () => {
 
       <Content>
         <div className="site-layout-content">
-          <Table columns={columns} dataSource={data} />
+          <Button
+            block
+            size="large"
+            type="primary"
+            icon={<PlusCircleOutlined />}
+            onClick={onAddOperation}
+          >
+            Добавить операцию
+          </Button>
+          <Divider dashed />
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={booksLoading || loading || operationLoading}
+            scroll={{ x: true }}
+          />
         </div>
       </Content>
       <Footer></Footer>

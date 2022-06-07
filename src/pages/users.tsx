@@ -1,45 +1,38 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
-import { Button, Layout, PageHeader, Tooltip, Table } from "antd";
-import { LogoutOutlined } from "@ant-design/icons";
+import { signOut } from "firebase/auth";
+import { Button, Layout, PageHeader, Tooltip, Table, Divider } from "antd";
+import { LogoutOutlined, UserAddOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Spinner } from "../shared/components/Spinner";
-import { useUser } from "../firebase/useUser";
 import { useUsers } from "../firebase/useUsers";
 import { LocationDoc, useLocations } from "../firebase/useLocations";
 import { mapDocsToHashTable } from "../firebase/utils";
+import { CurrentUser } from "../firebase/useCurrentUser";
 
-export const Users = () => {
-  const auth = getAuth();
-  const { profile, userLoading, user, loading } = useUser();
+type Props = {
+  currentUser: CurrentUser;
+};
+
+export const Users = ({ currentUser }: Props) => {
+  const { auth } = currentUser;
 
   const navigate = useNavigate();
 
-  const { usersDocData, usersDocLoading } = useUsers();
+  const { usersDocData, usersDocLoading } = useUsers({});
   const { locations, loading: locationLoading } = useLocations({});
   const locationsHashTable = useMemo(
     () => mapDocsToHashTable<LocationDoc>(locations),
     [locations]
   );
 
-  useEffect(() => {
-    if (!user && !userLoading) {
-      navigate(routes.auth);
-    }
-    if (profile.role !== "admin" && !loading) {
-      navigate(routes.root);
-    }
-  }, [user, profile, userLoading, loading, navigate]);
-
-  if (loading || usersDocLoading || locationLoading) {
-    return <Spinner />;
-  }
-
   const onLogout = () => {
     signOut(auth);
+  };
+
+  const onAddUser = () => {
+    navigate(routes.usersNew);
   };
 
   const { Content, Footer, Header } = Layout;
@@ -85,11 +78,11 @@ export const Users = () => {
       dataIndex: "role",
       key: "role",
     },
-    {
-      title: "Действие",
-      key: "action",
-      render: (text: string, record: any) => <Button>0</Button>,
-    },
+    // {
+    //   title: "Действие",
+    //   key: "action",
+    //   render: (text: string, record: any) => <Button>0</Button>,
+    // },
   ];
 
   const data = usersDocData?.map((user) => ({
@@ -102,7 +95,7 @@ export const Users = () => {
     city: (user.city && locationsHashTable[user.city]?.name) || user.city,
     address: user.address,
     role: user.role,
-  }));
+  })) || [];
 
   return (
     <Layout>
@@ -127,7 +120,22 @@ export const Users = () => {
 
       <Content>
         <div className="site-layout-content">
-          <Table columns={columns} dataSource={data} scroll={{ x: true }} />
+          <Button
+            block
+            size="large"
+            type="primary"
+            icon={<UserAddOutlined />}
+            onClick={onAddUser}
+          >
+            Добавить пользователя
+          </Button>
+          <Divider dashed />
+          <Table
+            columns={columns}
+            dataSource={data}
+            scroll={{ x: true }}
+            loading={locationLoading || usersDocLoading}
+          />
         </div>
       </Content>
       <Footer></Footer>
