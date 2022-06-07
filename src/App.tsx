@@ -15,20 +15,31 @@ import { Loading } from "./pages/loading";
 
 import "./App.less";
 
+const routesWithoutRedirect = [routes.registration, routes.auth];
+
 function App() {
   const currentUser = useCurrentUser();
+  const { profile, loading, user } = currentUser;
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (
-      !currentUser.user &&
-      !currentUser.loading &&
-      location.pathname !== routes.registration
-    ) {
-      navigate(routes.auth);
+    if (!loading) {
+      // Пользователь не авторизован
+      if (!user && !routesWithoutRedirect.includes(location.pathname)) {
+        navigate(routes.auth);
+      }
+      // Авторизованный пользователь с незаполненым профилем
+      if (
+        user &&
+        !profile &&
+        location.pathname !== routes.profile &&
+        !routesWithoutRedirect.includes(location.pathname)
+      ) {
+        navigate(routes.profile);
+      }
     }
-  }, [currentUser.loading, currentUser.user, navigate]);
+  }, [loading, user, profile, navigate, location.pathname]);
 
   if (currentUser.loading) {
     return <Loading currentUser={currentUser} />;

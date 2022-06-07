@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -22,29 +22,30 @@ type Props = {
 };
 
 const Auth = ({ currentUser }: Props) => {
-  const { auth, profile, loading } = currentUser;
-  const [signInWithGoogle, googleUser] = useSignInWithGoogle(auth);
-  const [signInWithEmailAndPassword, signedUser, , emailError] =
+  const { auth, user } = currentUser;
+  const [signInWithGoogle, , , googleError] = useSignInWithGoogle(auth);
+  const [signInWithEmailAndPassword, , , emailError] =
     useSignInWithEmailAndPassword(auth);
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if ((googleUser || signedUser || profile) && !loading) {
-      if (profile?.name) {
-        navigate(routes.root);
-      } else {
-        navigate(routes.profile);
-      }
+    if (user) {
+      navigate(routes.root);
     }
-  }, [googleUser, signedUser, navigate, profile, loading]);
+  }, [navigate, user]);
 
   const onFinish = ({ email, password }: any) => {
-    signInWithEmailAndPassword(email, password);
+    setIsSubmitting(true);
+    signInWithEmailAndPassword(email, password).finally(() => {
+      setIsSubmitting(false);
+    });
   };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log("Failed:", errorInfo);
   };
+
   const { Header, Footer, Content } = Layout;
   const { Title, Text } = Typography;
 
@@ -112,7 +113,7 @@ const Auth = ({ currentUser }: Props) => {
               }
             >
               <Space>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={isSubmitting}>
                   Войти
                 </Button>
                 <Link to={routes.registration}>Регистрация</Link>
@@ -124,6 +125,11 @@ const Auth = ({ currentUser }: Props) => {
               label="Войти через Google"
               onClick={() => signInWithGoogle()}
             />
+            {googleError && (
+              <Text type="danger">
+                При входе произошла ошибка: {googleError}
+              </Text>
+            )}
           </Form>
         </div>
       </Content>

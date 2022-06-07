@@ -19,10 +19,10 @@ export const useCurrentUser = () => {
   const [userDocData, userDocLoading] = useDocumentData<UserDoc>(userRef);
 
   useEffect(() => {
-    if (userDocLoading && !userPreloaded) {
+    if (!userLoading && !userPreloaded) {
       setUserPreloaded(true);
     }
-  }, [userDocLoading]);
+  }, [user, userLoading, userPreloaded]);
   
   const profile = userDocData;
   const favorite = profile?.favorite || [];
