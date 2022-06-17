@@ -1,8 +1,22 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { Button, Layout, PageHeader, Tooltip, Table, Divider } from "antd";
-import { LogoutOutlined, UserAddOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Layout,
+  PageHeader,
+  Tooltip,
+  Table,
+  Divider,
+  Space,
+  TableColumnsType,
+  Popconfirm,
+} from "antd";
+import {
+  DeleteOutlined,
+  LogoutOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
@@ -10,6 +24,7 @@ import { useUsers } from "../firebase/useUsers";
 import { LocationDoc, useLocations } from "../firebase/useLocations";
 import { mapDocsToHashTable } from "../firebase/utils";
 import { CurrentUser } from "../firebase/useCurrentUser";
+import { useUser } from "../firebase/useUser";
 
 type Props = {
   currentUser: CurrentUser;
@@ -21,6 +36,7 @@ export const Users = ({ currentUser }: Props) => {
   const navigate = useNavigate();
 
   const { usersDocData, usersDocLoading } = useUsers({});
+  const { deleteProfile } = useUser({ currentUser });
   const { locations, loading: locationLoading } = useLocations({});
   const locationsHashTable = useMemo(
     () => mapDocsToHashTable<LocationDoc>(locations),
@@ -37,7 +53,20 @@ export const Users = ({ currentUser }: Props) => {
 
   const { Content, Footer, Header } = Layout;
 
-  const columns = [
+  const data =
+  usersDocData?.map((user) => ({
+    key: user.id,
+    nameSpiritual: user.nameSpiritual,
+    name: user.name,
+    count: user.statistic?.[2022].count,
+    points: user.statistic?.[2022].points,
+    phone: user.phone,
+    city: (user.city && locationsHashTable[user.city]?.name) || user.city,
+    address: user.address,
+    role: user.role,
+  })) || [];
+
+  const columns: TableColumnsType<typeof data[0]> = [
     {
       title: "Духовное имя",
       dataIndex: "nameSpiritual",
@@ -78,24 +107,24 @@ export const Users = ({ currentUser }: Props) => {
       dataIndex: "role",
       key: "role",
     },
-    // {
-    //   title: "Действие",
-    //   key: "action",
-    //   render: (text: string, record: any) => <Button>0</Button>,
-    // },
+    {
+      title: "Действие",
+      key: "action",
+      render: (text: string, record) => (
+        <Space>
+          <Popconfirm
+            title={`Удалить пользователя ${record.name}?`}
+            onConfirm={() => { deleteProfile(record.key) }}
+          >
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
+        </Space>
+      ),
+    },
   ];
-
-  const data = usersDocData?.map((user) => ({
-    key: user.id,
-    nameSpiritual: user.nameSpiritual,
-    name: user.name,
-    count: user.statistic?.[2022].count,
-    points: user.statistic?.[2022].points,
-    phone: user.phone,
-    city: (user.city && locationsHashTable[user.city]?.name) || user.city,
-    address: user.address,
-    role: user.role,
-  })) || [];
 
   return (
     <Layout>
