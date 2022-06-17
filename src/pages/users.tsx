@@ -54,17 +54,17 @@ export const Users = ({ currentUser }: Props) => {
   const { Content, Footer, Header } = Layout;
 
   const data =
-  usersDocData?.map((user) => ({
-    key: user.id,
-    nameSpiritual: user.nameSpiritual,
-    name: user.name,
-    count: user.statistic?.[2022].count,
-    points: user.statistic?.[2022].points,
-    phone: user.phone,
-    city: (user.city && locationsHashTable[user.city]?.name) || user.city,
-    address: user.address,
-    role: user.role,
-  })) || [];
+    usersDocData?.map((user) => ({
+      key: user.id,
+      nameSpiritual: user.nameSpiritual,
+      name: user.name,
+      count: user.statistic?.[2022].count,
+      points: user.statistic?.[2022].points,
+      phone: user.phone,
+      city: (user.city && locationsHashTable[user.city]?.name) || user.city,
+      address: user.address,
+      role: user.role,
+    })) || [];
 
   const columns: TableColumnsType<typeof data[0]> = [
     {
@@ -114,12 +114,11 @@ export const Users = ({ currentUser }: Props) => {
         <Space>
           <Popconfirm
             title={`Удалить пользователя ${record.name}?`}
-            onConfirm={() => { deleteProfile(record.key) }}
+            onConfirm={() => {
+              deleteProfile(record.key);
+            }}
           >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-            />
+            <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
       ),
