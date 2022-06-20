@@ -7,6 +7,7 @@ import {
   addDoc,
   CollectionReference,
   getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { StatisticType } from "./statistic";
 import { CurrentUser } from "./useCurrentUser";
@@ -64,6 +65,13 @@ export const useUser = ({ currentUser }: Params) => {
     }
   };
 
+  const deleteProfile = async (id?: string) => {
+    if (id) {
+      const operationRef = doc(db, "users", id);
+      await deleteDoc(operationRef);
+    }
+  };
+
   const addNewUnattachedProfile = async (newProfile: UserDoc) => {
     if (user && usersRef) {
       await addDoc(usersRef, { ...newProfile, isUnattached: true });
@@ -109,6 +117,7 @@ export const useUser = ({ currentUser }: Params) => {
     addStatistic,
     toggleFavorite,
     setProfile,
+    deleteProfile,
     addNewUnattachedProfile,
   };
 };
