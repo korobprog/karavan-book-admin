@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
 import { useUser } from "../firebase/useUser";
 import { LocationSelect } from "../shared/components/LocationSelect";
-import { useLocations } from "../firebase/useLocations";
+import { addLocation, useLocations } from "../firebase/useLocations";
 import { useDebouncedCallback } from "use-debounce/lib";
 import { CurrentUser } from "../firebase/useCurrentUser";
 
@@ -24,7 +24,7 @@ export const UsersNew = ({ currentUser }: Props) => {
 
   const [locationSearchString, setLocationSearchString] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addLocation, locations } = useLocations({
+  const { locations } = useLocations({
     searchString: locationSearchString,
   });
 
@@ -42,9 +42,7 @@ export const UsersNew = ({ currentUser }: Props) => {
   };
 
   const onAddNewLocation = () => {
-    addLocation({
-      name: locationSearchString,
-    });
+    addLocation({ name: locationSearchString });
     setLocationSearchString("");
   };
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { Button, Layout, PageHeader, Tooltip, Table, Divider } from "antd";
@@ -6,9 +6,15 @@ import { CalculatorOutlined, LogoutOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { LocationDoc, useLocations } from "../firebase/useLocations";
+import {
+  calculateStatisticToLocations,
+  LocationDoc,
+  useLocations,
+} from "../firebase/useLocations";
 import { LocationStatistic } from "../shared/components/LocationStatistic";
 import { CurrentUser } from "../firebase/useCurrentUser";
+import { getBookPointsMap, useBooks } from "../shared/helpers/getBooks";
+import { CoordinatesEdit } from "../shared/components/CoordinatesEdit";
 
 type Props = {
   currentUser: CurrentUser;
@@ -18,11 +24,18 @@ export const Locations = ({ currentUser }: Props) => {
   const navigate = useNavigate();
   const { locations, loading: locationsLoading } = useLocations({});
 
+  const { books } = useBooks();
+  const [isCalculating, setIsCalculating] = useState(false);
+
   const onLogout = () => {
     signOut(currentUser.auth);
   };
 
-  const onCalculate = () => {};
+  const onCalculate = async () => {
+    setIsCalculating(true);
+    await calculateStatisticToLocations(getBookPointsMap(books), locations);
+    setIsCalculating(false);
+  };
 
   const { Content, Footer, Header } = Layout;
 
@@ -41,6 +54,9 @@ export const Locations = ({ currentUser }: Props) => {
       title: "Координаты",
       dataIndex: "coordinates",
       key: "coordinates",
+      render: (_stat: LocationDoc["coordinates"], location: LocationDoc & { key: string }) => (
+        <CoordinatesEdit location={location} locations={locations} />
+      ),
     },
     {
       title: "Распространено в 2022",
@@ -50,20 +66,18 @@ export const Locations = ({ currentUser }: Props) => {
         <LocationStatistic statistic={stat} />
       ),
     },
-    {
-      title: "Действие",
-      key: "action",
-      render: (text: string, record: any) => <Button>Сделать что-то</Button>,
-    },
+    // {
+    //   title: "Действие",
+    //   key: "action",
+    //   render: (text: string, record: any) => <Button>Сделать что-то</Button>,
+    // },
   ];
 
-  const data = locations?.map((operation, index) => ({
-    key: operation.id || "" + index,
-    name: operation.name,
-    country: operation.country,
-    statistic: operation.statistic,
-    coordinates: operation.coordinates,
-  })) || [];
+  const data =
+    locations?.map((location, index) => ({
+      ...location,
+      key: location.id || String(index)
+    })) || [];
 
   return (
     <Layout>
@@ -94,10 +108,13 @@ export const Locations = ({ currentUser }: Props) => {
             type="primary"
             icon={<CalculatorOutlined />}
             onClick={onCalculate}
+            loading={isCalculating}
           >
             Пересчитать статистику
           </Button>
+
           <Divider dashed />
+
           <Table
             columns={columns}
             dataSource={data}

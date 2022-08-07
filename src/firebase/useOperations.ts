@@ -26,6 +26,7 @@ export type OperationDoc = {
   totalPoints: number;
   books: DistributedBook[];
   isAuthorized?: boolean;
+  isOnline?: boolean;
 };
 
 export const useOperations = () => {

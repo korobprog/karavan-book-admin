@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import useGoogleSheets from "use-google-sheets";
 import {
   Button,
   Layout,
@@ -24,14 +23,14 @@ import {
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Book, getBooks } from "../shared/helpers/getBooks";
+import { Book, useBooks } from "../shared/helpers/getBooks";
 import { useUser } from "../firebase/useUser";
 import {
   DistributedBook,
   OperationDoc,
   useOperations,
 } from "../firebase/useOperations";
-import { useLocations } from "../firebase/useLocations";
+import { addLocation, useLocations } from "../firebase/useLocations";
 import { LocationSelect } from "../shared/components/LocationSelect";
 import { useDebouncedCallback } from "use-debounce/lib";
 import { UserSelect } from "../shared/components/UserSelect";
@@ -58,13 +57,10 @@ const Report = ({ currentUser }: Props) => {
 
   const navigate = useNavigate();
 
-  const { data, loading: booksLoading } = useGoogleSheets({
-    apiKey: process.env.REACT_APP_GOOGLE_API_KEY as string,
-    sheetId: process.env.REACT_APP_GOOGLE_SHEETS_ID as string,
-  });
+  const { books, booksLoading } = useBooks();
 
   const { addOperation } = useOperations();
-  const { addLocation, locations } = useLocations({
+  const { locations } = useLocations({
     searchString: locationSearchString,
   });
   const { usersDocData } = useUsers({
@@ -83,7 +79,6 @@ const Report = ({ currentUser }: Props) => {
     signOut(auth);
   };
 
-  const books = getBooks(data);
   const { favoriteBooks, otherBooks } = books.reduce(
     ({ favoriteBooks, otherBooks }, book) => {
       if (book.name.toLowerCase().includes(searchString)) {

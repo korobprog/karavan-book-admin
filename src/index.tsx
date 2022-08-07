@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
+import "./firebase/clientApp";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import "./firebase/clientApp";
 
 import "moment/locale/ru";
 import moment from "moment";
