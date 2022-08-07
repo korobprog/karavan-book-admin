@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { routes } from "../shared/routes";
 import { useUser } from "../firebase/useUser";
 import { LocationSelect } from "../shared/components/LocationSelect";
-import { useLocations } from "../firebase/useLocations";
+import { addLocation, useLocations } from "../firebase/useLocations";
 import { useDebouncedCallback } from "use-debounce/lib";
 import { CurrentUser } from "../firebase/useCurrentUser";
 
@@ -34,7 +34,7 @@ const Profile = ({ currentUser }: Props) => {
   const { Option } = Select;
 
   const [locationSearchString, setLocationSearchString] = useState("");
-  const { addLocation, locations } = useLocations({
+  const { locations } = useLocations({
     searchString: locationSearchString,
   });
 
