@@ -7,6 +7,7 @@ import {
   orderBy,
   deleteDoc,
   doc,
+  getDocs,
 } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { idConverter } from "./utils";
@@ -29,29 +30,32 @@ export type OperationDoc = {
   isOnline?: boolean;
 };
 
-export const useOperations = () => {
-  const db = getFirestore();
-  const operationsRef = collection(db, "operations").withConverter(
-    idConverter
-  ) as CollectionReference<OperationDoc>;
+const db = getFirestore();
 
-  const [operationsDocData, operationsDocLoading] =
+const operationsRef = collection(db, "operations").withConverter(
+  idConverter
+) as CollectionReference<OperationDoc>;
+
+export const getOperations = async () => {
+  return await getDocs(operationsRef);
+};
+
+export const addOperation = async (params: OperationDoc) => {
+  addDoc(operationsRef, params);
+};
+
+export const deleteOperation = async (id?: string | number) => {
+  if (id) {
+    const operationRef = doc(db, "operations", String(id));
+    deleteDoc(operationRef);
+  }
+};
+
+export const useOperations = () => {
+  const [operationsDocData, loading] =
     useCollectionData<OperationDoc>(
       query(operationsRef, orderBy("date", "desc"))
     );
 
-  const addOperation = async (params: OperationDoc) => {
-    addDoc(operationsRef, params);
-  };
-
-  const deleteOperation = async (id?: string | number) => {
-    if (id) {
-      const operationRef = doc(db, "operations", String(id));
-      deleteDoc(operationRef);
-    }
-  };
-
-  const loading = operationsDocLoading;
-
-  return { addOperation, deleteOperation, operationsDocData, loading };
+  return { operationsDocData, loading };
 };

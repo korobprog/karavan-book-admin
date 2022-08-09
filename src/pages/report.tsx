@@ -23,12 +23,12 @@ import {
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import { Book, useBooks } from "../shared/helpers/getBooks";
+import { Book, getBookPointsMap, useBooks } from "../shared/helpers/getBooks";
 import { useUser } from "../firebase/useUser";
 import {
+  addOperation,
   DistributedBook,
   OperationDoc,
-  useOperations,
 } from "../firebase/useOperations";
 import { addLocation, useLocations } from "../firebase/useLocations";
 import { LocationSelect } from "../shared/components/LocationSelect";
@@ -36,6 +36,7 @@ import { useDebouncedCallback } from "use-debounce/lib";
 import { UserSelect } from "../shared/components/UserSelect";
 import { useUsers } from "../firebase/useUsers";
 import { CurrentUser } from "../firebase/useCurrentUser";
+import { addOperationToLocationStatistic } from "../services/locations";
 
 type FormValues = Record<number, number> & {
   locationId: string;
@@ -59,7 +60,6 @@ const Report = ({ currentUser }: Props) => {
 
   const { books, booksLoading } = useBooks();
 
-  const { addOperation } = useOperations();
   const { locations } = useLocations({
     searchString: locationSearchString,
   });
@@ -139,8 +139,15 @@ const Report = ({ currentUser }: Props) => {
       };
 
       Promise.all([
-        addStatistic({ count: totalCount, points: totalPoints }, userId),
         addOperation(operation),
+        // TODO: вынести в сервис services/user
+        operation.isAuthorized &&
+          addStatistic({ count: totalCount, points: totalPoints }, userId),
+        addOperationToLocationStatistic(
+          operation,
+          getBookPointsMap(books),
+          locations
+        ),
       ])
         .then(() => navigate(routes.reports))
         .finally(() => setIsSubmitting(false));
