@@ -6,15 +6,12 @@ import { CalculatorOutlined, LogoutOutlined } from "@ant-design/icons";
 
 import BbtLogo from "../images/bbt-logo.png";
 import { routes } from "../shared/routes";
-import {
-  calculateStatisticToLocations,
-  LocationDoc,
-  useLocations,
-} from "../firebase/useLocations";
+import { LocationDoc, useLocations } from "../firebase/useLocations";
 import { LocationStatistic } from "../shared/components/LocationStatistic";
 import { CurrentUser } from "../firebase/useCurrentUser";
 import { getBookPointsMap, useBooks } from "../shared/helpers/getBooks";
 import { CoordinatesEdit } from "../shared/components/CoordinatesEdit";
+import { recalculateStatisticToLocations } from "../services/locations";
 
 type Props = {
   currentUser: CurrentUser;
@@ -33,7 +30,7 @@ export const Locations = ({ currentUser }: Props) => {
 
   const onCalculate = async () => {
     setIsCalculating(true);
-    await calculateStatisticToLocations(getBookPointsMap(books), locations);
+    await recalculateStatisticToLocations(getBookPointsMap(books), locations);
     setIsCalculating(false);
   };
 
@@ -54,9 +51,10 @@ export const Locations = ({ currentUser }: Props) => {
       title: "Координаты",
       dataIndex: "coordinates",
       key: "coordinates",
-      render: (_stat: LocationDoc["coordinates"], location: LocationDoc & { key: string }) => (
-        <CoordinatesEdit location={location} locations={locations} />
-      ),
+      render: (
+        _stat: LocationDoc["coordinates"],
+        location: LocationDoc & { key: string }
+      ) => <CoordinatesEdit location={location} locations={locations} />,
     },
     {
       title: "Распространено в 2022",
@@ -76,7 +74,7 @@ export const Locations = ({ currentUser }: Props) => {
   const data =
     locations?.map((location, index) => ({
       ...location,
-      key: location.id || String(index)
+      key: location.id || String(index),
     })) || [];
 
   return (

@@ -3,7 +3,6 @@ import {
   CollectionReference,
   getFirestore,
   addDoc,
-  getDocs,
   query,
   where,
   setDoc,
@@ -11,11 +10,7 @@ import {
   DocumentReference,
 } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
-import {
-  calculateOperationStatistic,
-  getBookCountsMap,
-} from "../services/statistic";
-import { OperationDoc } from "./useOperations";
+
 import { idConverter } from "./utils";
 
 export type LocationsStatisticType = {
@@ -25,9 +20,6 @@ export type LocationsStatisticType = {
   totalOnlineCount: number;
   totalOnlinePoints: number;
 };
-
-// TODO: get from operation date
-const CHANGED_YEAR = 2022;
 
 export type LocationDoc = {
   id?: string;
@@ -69,55 +61,6 @@ export const setCoordinates = (x: number, y: number, location: LocationDoc) => {
   };
   if (id) {
     editLocation(id, newLocation);
-  }
-};
-
-export const calculateStatisticToLocations = async (
-  bookPointsMap: Record<string, number>,
-  locationsDocData: LocationDoc[]
-) => {
-  try {
-    const operationsSnapshot = await getDocs(
-      collection(db, "operations") as CollectionReference<OperationDoc>
-    );
-
-    const countsByCity = {} as Record<string, LocationsStatisticType>;
-    operationsSnapshot.forEach((doc) => {
-      const operation = doc.data();
-
-      if (operation.locationId) {
-        const statistic = calculateOperationStatistic(
-          getBookCountsMap(operation.books),
-          bookPointsMap,
-          operation.isOnline
-        );
-
-        countsByCity[operation.locationId] = statistic;
-      }
-    });
-
-    const promises = Object.keys(countsByCity).map(async (locationId) => {
-      const currentLocationWithId = locationsDocData.find(
-        (location) => location.id === locationId
-      );
-
-      if (currentLocationWithId) {
-        const { id: _omitKey, ...newLocation } = currentLocationWithId;
-
-        const statistic = {
-          ...(newLocation.statistic || {}),
-          [CHANGED_YEAR]: countsByCity[locationId],
-        };
-
-        return editLocation(locationId, { ...newLocation, statistic });
-      }
-
-      return Promise.resolve();
-    });
-
-    await Promise.all(promises);
-  } catch (e) {
-    console.error(e);
   }
 };
 
