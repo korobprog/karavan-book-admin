@@ -101,7 +101,10 @@ export const addOperationToLocationStatistic = async (
   bookPointsMap: Record<string, number>,
   locations: LocationDoc[]
 ) => {
-  const { locationId, isOnline } = operation;
+  const { locationId, isOnline, isAuthorized } = operation;
+  if (!isAuthorized) {
+    return;
+  }
 
   const newStatisticYearData = calculateOperationStatistic(
     getBookCountsMap(operation.books),

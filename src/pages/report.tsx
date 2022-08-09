@@ -139,8 +139,10 @@ const Report = ({ currentUser }: Props) => {
       };
 
       Promise.all([
-        addStatistic({ count: totalCount, points: totalPoints }, userId),
         addOperation(operation),
+        // TODO: вынести в сервис services/user
+        operation.isAuthorized &&
+          addStatistic({ count: totalCount, points: totalPoints }, userId),
         addOperationToLocationStatistic(
           operation,
           getBookPointsMap(books),
