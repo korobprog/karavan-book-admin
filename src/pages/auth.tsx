@@ -119,12 +119,12 @@ const Auth = ({ currentUser }: Props) => {
                 <Link to={routes.registration}>Регистрация</Link>
               </Space>
             </Form.Item>
-
             <GoogleButton
               className="centred"
               label="Войти через Google"
               onClick={() => signInWithGoogle()}
             />
+            
             {googleError && (
               <Text type="danger">
                 При входе произошла ошибка: {googleError}

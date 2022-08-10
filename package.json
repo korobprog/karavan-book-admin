@@ -42,6 +42,10 @@
     "build": "craco build",
     "test": "craco test"
   },
+  "resolutions": {
+    "@types/react": "17.0.14",
+    "@types/react-dom": "17.0.14"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -60,4 +64,5 @@
       "last 1 safari version"
     ]
   }
+  
 }
