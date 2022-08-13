@@ -125,7 +125,7 @@ const Home = ({ currentUser }: Props) => {
             icon={<FlagOutlined />}
             onClick={onLocationsSelect}
           >
-            Города на карте
+            Города
           </Button>
           <Divider />
           <Button
