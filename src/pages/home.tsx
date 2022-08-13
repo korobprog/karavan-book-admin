@@ -8,6 +8,7 @@ import {
   FlagOutlined,
   MessageOutlined,
   BookOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import BbtLogo from "../images/bbt-logo.png";
 import { useNavigate } from "react-router-dom";
@@ -124,7 +125,18 @@ const Home = ({ currentUser }: Props) => {
             icon={<FlagOutlined />}
             onClick={onLocationsSelect}
           >
-            Города на карте
+            Города
+          </Button>
+          <Divider />
+          <Button
+            href="https://sankirtana-map.web.app"
+            block
+            size="large"
+            icon={<EnvironmentOutlined />}
+            type="dashed"
+            target="_blank"
+          >
+            Общая статистика на карте
           </Button>
           <Divider />
           <Button
